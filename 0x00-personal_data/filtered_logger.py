@@ -25,6 +25,58 @@ HOST = os.environ.get("PERSONAL_DATA_DB_HOST", "localhost")
 DB_NAME = os.environ.get("PERSONAL_DATA_DB_NAME")
 
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
+print(
+    "USERNAME:", USERNAME,
+    "PASSWORD", PASSWORD,
+    "HOST", HOST,
+    "DB_NAME", DB_NAME
+
+)
+
+
+class RedactingFormatter(logging.Formatter):
+    """ Redacting Formatter class"""
+
+    REDACTION = "***"
+    FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
+    SEPARATOR = ";"
+
+    def __init__(self, fields: List[str]):
+        self.fields = fields
+        super(RedactingFormatter, self).__init__(self.FORMAT)
+
+    def format(self, record: logging.LogRecord) -> str:
+        """
+        Formats a log record by obfuscating sensitive information.
+
+        This method overrides the `format` method of `logging.Formatter`
+        to provide additional processing on the log message. It uses the
+        `filter_datum` function to replace sensitive information
+        in specified fields with a redaction string.
+
+        Parameters:
+            record (logging.LogRecord): The log record object containing the
+                                        log message and associated metadata.
+
+        Returns:
+            str: The formatted log message with sensitive fields obfuscated.
+
+        Example:
+            Suppose the original log message is:
+                "user=alice;email=alice@example.com;password=secret123;"
+            and `self.fields` includes "password" with `self.REDACTION`
+            set to "****". After applying `filter_datum`, the
+            formatted message would become:
+                "user=alice;email=alice@example.com;password=****;"
+        """
+        record.msg = filter_datum(
+            self.fields,
+            self.REDACTION,
+            record.getMessage(),
+            self.SEPARATOR
+        )
+
+        return super(RedactingFormatter, self).format(record)
 
 
 def filter_datum(
@@ -109,46 +161,32 @@ def get_db() -> MySQLConnection:
     )
 
 
-class RedactingFormatter(logging.Formatter):
-    """ Redacting Formatter class"""
+def main():
+    """
+    Obtain a database connection using get_db and retrieves all rows
+    in the users table and display each row under a filtered format
+    """
+    logger = get_logger()
+    db = get_db()
 
-    REDACTION = "***"
-    FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
-    SEPARATOR = ";"
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
 
-    def __init__(self, fields: List[str]):
-        self.fields = fields
-        super(RedactingFormatter, self).__init__(self.FORMAT)
+    # Get column names from the cursor description
+    columns = [desc[0] for desc in cursor.description]
 
-    def format(self, record: logging.LogRecord) -> str:
-        """
-        Formats a log record by obfuscating sensitive information.
+    # Fetch and process each row
+    for row in cursor.fetchall():
+        # Create a dictionary of column names and row values
+        row_data = dict(zip(columns, row))
 
-        This method overrides the `format` method of `logging.Formatter`
-        to provide additional processing on the log message. It uses the
-        `filter_datum` function to replace sensitive information
-        in specified fields with a redaction string.
+        # Format the log message dynamically
+        log_message = "; ".join(f"{key}={value}" for key, value in row_data.items()) + ";"
+        logger.info(log_message)
 
-        Parameters:
-            record (logging.LogRecord): The log record object containing the
-                                        log message and associated metadata.
+    cursor.close()
+    db.close()
 
-        Returns:
-            str: The formatted log message with sensitive fields obfuscated.
 
-        Example:
-            Suppose the original log message is:
-                "user=alice;email=alice@example.com;password=secret123;"
-            and `self.fields` includes "password" with `self.REDACTION`
-            set to "****". After applying `filter_datum`, the
-            formatted message would become:
-                "user=alice;email=alice@example.com;password=****;"
-        """
-        record.msg = filter_datum(
-            self.fields,
-            self.REDACTION,
-            record.getMessage(),
-            self.SEPARATOR
-        )
-
-        return super(RedactingFormatter, self).format(record)
+if __name__ == "__main__":
+    main()
