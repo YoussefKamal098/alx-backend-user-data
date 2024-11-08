@@ -11,9 +11,17 @@ to search for the given fields and replaces their
 values with the specified redaction.
 """
 
+import os
 import logging
 import re
 from typing import List
+
+from mysql.connector.connection import MySQLConnection
+
+USERNAME = os.environ.get("PERSONAL_DATA_DB_USERNAME", "root")
+PASSWORD = os.environ.get("PERSONAL_DATA_DB_PASSWORD", "")
+HOST = os.environ.get("PERSONAL_DATA_DB_HOST", "localhost")
+DB_NAME = os.environ.get("PERSONAL_DATA_DB_NAME")
 
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
@@ -78,6 +86,26 @@ def get_logger() -> logging.Logger:
     logger.addHandler(stream_handler)
 
     return logger
+
+
+def get_db() -> MySQLConnection:
+    """
+    Returns a MySQL database connection.
+
+    This function creates a connection to a MySQL database using the
+    `mysql.connector` module and returns the connection object.
+
+    Returns:
+        mysql.connector.connection.MySQLConnection: The MySQL database
+        connection object.
+    """
+
+    return MySQLConnection(
+        user=USERNAME,
+        password=PASSWORD,
+        host=HOST,
+        database=DB_NAME
+    )
 
 
 class RedactingFormatter(logging.Formatter):
