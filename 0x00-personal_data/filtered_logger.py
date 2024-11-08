@@ -15,8 +15,9 @@ import os
 import logging
 import re
 from typing import List
-import mysql
-# from mysql.connector.connection import MySQLConnection
+
+from mysql.connector.connection import MySQLConnection
+
 
 USERNAME = os.environ.get("PERSONAL_DATA_DB_USERNAME", "root")
 PASSWORD = os.environ.get("PERSONAL_DATA_DB_PASSWORD", "")
@@ -88,18 +89,24 @@ def get_logger() -> logging.Logger:
     return logger
 
 
-def get_db() -> mysql.connector.connection.MySQLConnection:
-    """ Returns a connector to a MySQL database """
-    username = os.environ.get("PERSONAL_DATA_DB_USERNAME", "root")
-    password = os.environ.get("PERSONAL_DATA_DB_PASSWORD", "")
-    host = os.environ.get("PERSONAL_DATA_DB_HOST", "localhost")
-    db_name = os.environ.get("PERSONAL_DATA_DB_NAME")
+def get_db() -> MySQLConnection:
+    """
+    Returns a MySQL database connection.
 
-    cnx = mysql.connector.connection.MySQLConnection(user=username,
-                                                     password=password,
-                                                     host=host,
-                                                     database=db_name)
-    return cnx
+    This function creates a connection to a MySQL database using the
+    `mysql.connector` module and returns the connection object.
+
+    Returns:
+        mysql.connector.connection.MySQLConnection: The MySQL database
+        connection object.
+    """
+
+    return MySQLConnection(
+        user=USERNAME,
+        password=PASSWORD,
+        host=HOST,
+        database=DB_NAME
+    )
 
 
 class RedactingFormatter(logging.Formatter):
