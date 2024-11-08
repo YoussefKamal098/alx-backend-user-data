@@ -25,13 +25,6 @@ HOST = os.environ.get("PERSONAL_DATA_DB_HOST", "localhost")
 DB_NAME = os.environ.get("PERSONAL_DATA_DB_NAME")
 
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
-print(
-    "USERNAME:", USERNAME,
-    "PASSWORD", PASSWORD,
-    "HOST", HOST,
-    "DB_NAME", DB_NAME
-
-)
 
 
 class RedactingFormatter(logging.Formatter):
@@ -181,7 +174,8 @@ def main():
         row_data = dict(zip(columns, row))
 
         # Format the log message dynamically
-        log_message = "; ".join(f"{key}={value}" for key, value in row_data.items()) + ";"
+        log_message = "; ".join(
+            f"{key}={value}" for key, value in row_data.items()) + ";"
         logger.info(log_message)
 
     cursor.close()
