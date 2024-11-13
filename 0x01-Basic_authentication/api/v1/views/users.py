@@ -96,7 +96,7 @@ def create_user() -> str:
 
         return response
     except Exception as err:
-        abort(500, f"Can't create User: {err}")
+        abort(400, f"Can't create User: {err}")
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
