@@ -15,8 +15,8 @@ app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
 """
-Determine which authentication class to use based on
-AUTH_TYPE environment variable
+Determine which authentication class to
+use based on AUTH_TYPE environment variable
 """
 auth_type = os.getenv('AUTH_TYPE')
 auth = BasicAuth() if auth_type == 'basic_auth' else Auth()
