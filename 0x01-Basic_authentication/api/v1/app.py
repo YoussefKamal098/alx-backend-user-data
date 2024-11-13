@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-"""
-API Route module
-"""
+""" API Route module """
 import os
 from flask import Flask, abort, request, jsonify, Response
 from flask_cors import CORS
