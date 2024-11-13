@@ -2,58 +2,53 @@
 """ User module
 """
 import hashlib
+from typing import List, Dict, Any, Optional
+
 from models.base import Base
 
 
 class User(Base):
-    """ User class
-    """
+    """ User class """
 
-    def __init__(self, *args: list, **kwargs: dict):
-        """ Initialize a User instance
-        """
+    def __init__(self, *args: List[Any], **kwargs: Dict[str, Any]):
+        """ Initialize a User instance """
         super().__init__(*args, **kwargs)
-        self.email = kwargs.get('email')
-        self._password = kwargs.get('_password')
-        self.first_name = kwargs.get('first_name')
-        self.last_name = kwargs.get('last_name')
+
+        self.email: Optional[str] = kwargs.get('email')
+        self._password: Optional[str] = kwargs.get('_password')
+        self.first_name: Optional[str] = kwargs.get('first_name')
+        self.last_name: Optional[str] = kwargs.get('last_name')
 
     @property
-    def password(self) -> str:
-        """ Getter of the password
-        """
+    def password(self) -> Optional[str]:
+        """ Getter for the password """
         return self._password
 
     @password.setter
-    def password(self, pwd: str):
-        """ Setter of a new password: encrypt in SHA256
-        """
-        if pwd is None or type(pwd) is not str:
+    def password(self, pwd: Optional[str]):
+        """ Setter for a new password: encrypt in SHA256 """
+        if not isinstance(pwd, str) or not pwd:
             self._password = None
         else:
-            self._password = hashlib.sha256(pwd.encode()).hexdigest().lower()
+            self._password = self._encrypt_password(pwd)
 
     def is_valid_password(self, pwd: str) -> bool:
-        """ Validate a password
-        """
-        if pwd is None or type(pwd) is not str:
+        """ Validate a password """
+        if not isinstance(pwd, str) or not pwd or not self.password:
             return False
-        if self.password is None:
-            return False
-        pwd_e = pwd.encode()
-        return hashlib.sha256(pwd_e).hexdigest().lower() == self.password
+        return self._encrypt_password(pwd) == self.password
 
     def display_name(self) -> str:
-        """ Display User name based on email/first_name/last_name
-        """
-        if self.email is None and self.first_name is None \
-                and self.last_name is None:
-            return ""
-        if self.first_name is None and self.last_name is None:
-            return "{}".format(self.email)
-        if self.last_name is None:
-            return "{}".format(self.first_name)
-        if self.first_name is None:
-            return "{}".format(self.last_name)
-        else:
-            return "{} {}".format(self.first_name, self.last_name)
+        """ Display the full name based on email, first name, and last name """
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
+        elif self.first_name:
+            return self.first_name
+        elif self.last_name:
+            return self.last_name
+        return self.email or ""
+
+    @staticmethod
+    def _encrypt_password(pwd: str) -> str:
+        """ Encrypt the password using SHA256 """
+        return hashlib.sha256(pwd.encode()).hexdigest().lower()

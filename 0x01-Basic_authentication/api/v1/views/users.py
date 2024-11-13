@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-""" Module of Users views
-"""
+""" Module of Users views """
+from flask import abort, jsonify, request, Response
 from api.v1.views import app_views
-from flask import abort, jsonify, request
 from models.user import User
 
 
@@ -27,14 +26,16 @@ def view_one_user(user_id: str = None) -> str:
     """
     if user_id is None:
         abort(404)
+
     user = User.get(user_id)
     if user is None:
         abort(404)
+
     return jsonify(user.to_json())
 
 
 @app_views.route('/users/<user_id>', methods=['DELETE'], strict_slashes=False)
-def delete_user(user_id: str = None) -> str:
+def delete_user(user_id: str = None) -> Response:
     """ DELETE /api/v1/users/:id
     Path parameter:
       - User ID
@@ -44,15 +45,21 @@ def delete_user(user_id: str = None) -> str:
     """
     if user_id is None:
         abort(404)
+
     user = User.get(user_id)
     if user is None:
         abort(404)
+
     user.remove()
-    return jsonify({}), 200
+
+    response = jsonify({})
+    response.status_code = 200
+
+    return response
 
 
 @app_views.route('/users', methods=['POST'], strict_slashes=False)
-def create_user() -> str:
+def create_user() -> Response:
     """ POST /api/v1/users/
     JSON body:
       - email
@@ -61,36 +68,39 @@ def create_user() -> str:
       - first_name (optional)
     Return:
       - User object JSON represented
-      - 400 if can't create the new User
+      - 400 if it can't create the new User
     """
-    rj = None
-    error_msg = None
+    request_json = request.get_json(slice=True)
+
+    if not request_json:
+        abort(400, "Wrong format")
+
+    email = request_json.get("email")
+    password = request_json.get("password")
+
+    if not email:
+        abort(400, "email missing")
+    if not password:
+        abort(400, "password missing")
+
     try:
-        rj = request.get_json()
-    except Exception as e:
-        rj = None
-    if rj is None:
-        error_msg = "Wrong format"
-    if error_msg is None and rj.get("email", "") == "":
-        error_msg = "email missing"
-    if error_msg is None and rj.get("password", "") == "":
-        error_msg = "password missing"
-    if error_msg is None:
-        try:
-            user = User()
-            user.email = rj.get("email")
-            user.password = rj.get("password")
-            user.first_name = rj.get("first_name")
-            user.last_name = rj.get("last_name")
-            user.save()
-            return jsonify(user.to_json()), 201
-        except Exception as e:
-            error_msg = "Can't create User: {}".format(e)
-    return jsonify({'error': error_msg}), 400
+        user = User()
+        user.email = email
+        user.password = password
+        user.first_name = request_json.get("first_name")
+        user.last_name = request_json.get("last_name")
+        user.save()
+
+        response = jsonify(user.to_json())
+        response.status_code = 201
+
+        return response
+    except Exception as err:
+        abort(500, f"Can't create User: {err}")
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
-def update_user(user_id: str = None) -> str:
+def update_user(user_id: str = None) -> Response:
     """ PUT /api/v1/users/:id
     Path parameter:
       - User ID
@@ -100,23 +110,27 @@ def update_user(user_id: str = None) -> str:
     Return:
       - User object JSON represented
       - 404 if the User ID doesn't exist
-      - 400 if can't update the User
+      - 400 if it can't update the User
     """
     if user_id is None:
         abort(404)
+
     user = User.get(user_id)
     if user is None:
         abort(404)
-    rj = None
-    try:
-        rj = request.get_json()
-    except Exception as e:
-        rj = None
-    if rj is None:
-        return jsonify({'error': "Wrong format"}), 400
-    if rj.get('first_name') is not None:
-        user.first_name = rj.get('first_name')
-    if rj.get('last_name') is not None:
-        user.last_name = rj.get('last_name')
+
+    request_json = request.get_json(slice=True)
+    if not request_json:
+        abort(400, "Wrong format")
+
+    if request_json.get('first_name') is not None:
+        user.first_name = request_json.get('first_name')
+    if request_json.get('last_name') is not None:
+        user.last_name = request_json.get('last_name')
+
     user.save()
-    return jsonify(user.to_json()), 200
+
+    response = jsonify(user.to_json())
+    response.status_code = 200
+
+    return response

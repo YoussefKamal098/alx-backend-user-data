@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-""" Module of Index views
-"""
+""" Module of Index views """
 from flask import jsonify, abort
 from api.v1.views import app_views
+from models.user import User
 
 
 @app_views.route('/status', methods=['GET'], strict_slashes=False)
@@ -18,23 +18,20 @@ def status() -> str:
 def stats() -> str:
     """ GET /api/v1/stats
     Return:
-      - the number of each objects
+      - the number of each object
     """
-    from models.user import User
-    stats = {}
-    stats['users'] = User.count()
-    return jsonify(stats)
+    return jsonify({"users": User.count()})
 
 
 @app_views.route('/unauthorized/', strict_slashes=False)
-def unauthorized() -> str:
-    """ Authorization route
+def unauthorized() -> None:
+    """ Trigger an Unauthorized error
     """
     abort(401)
 
 
 @app_views.route('/forbidden/', strict_slashes=False)
-def forbidden() -> str:
-    """ Forbidden route
+def forbidden() -> None:
+    """ Trigger a Forbidden error
     """
     abort(403)
