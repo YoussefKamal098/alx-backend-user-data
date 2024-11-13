@@ -27,16 +27,16 @@ EXCLUDED_PATHS = [
 ]
 
 
-@app.before_request
-def handle_authentication() -> None:
-    """Authentication and authorization before each request."""
-    if not auth or not auth.require_auth(request.path, EXCLUDED_PATHS):
-        return
-
-    if not auth.authorization_header(request):
-        abort(401)
-    if not auth.current_user(request):
-        abort(403)
+# @app.before_request
+# def handle_authentication() -> None:
+#     """Authentication and authorization before each request."""
+#     if not auth or not auth.require_auth(request.path, EXCLUDED_PATHS):
+#         return
+#
+#     if not auth.authorization_header(request):
+#         abort(401)
+#     if not auth.current_user(request):
+#         abort(403)
 
 
 @app.errorhandler(404)
