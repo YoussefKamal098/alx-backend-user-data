@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" Module of Index views """
+""" Module of Index views API """
 from flask import jsonify, abort
 
 from models.user import User
