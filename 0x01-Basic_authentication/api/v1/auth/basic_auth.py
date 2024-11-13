@@ -17,7 +17,7 @@ authorization headers.
 
 import re
 import base64
-import binascii
+# import binascii
 from typing import Tuple, Optional
 from api.v1.auth.auth import Auth
 from models.user import User
@@ -85,7 +85,7 @@ class BasicAuth(Auth):
         try:
             decoded_bytes = base64.b64decode(base64_authorization_header)
             return decoded_bytes.decode("utf-8")
-        except (binascii.Error, UnicodeDecodeError):
+        except UnicodeDecodeError:
             return None
 
     def extract_user_credentials(
