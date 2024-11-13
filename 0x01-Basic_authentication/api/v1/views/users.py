@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ Module of Users views """
-from flask import abort, jsonify, request, Response
+from flask import abort, jsonify, request
 from api.v1.views import app_views
 from models.user import User
 
@@ -35,7 +35,7 @@ def view_one_user(user_id: str = None) -> str:
 
 
 @app_views.route('/users/<user_id>', methods=['DELETE'], strict_slashes=False)
-def delete_user(user_id: str = None) -> Response:
+def delete_user(user_id: str = None) -> str:
     """ DELETE /api/v1/users/:id
     Path parameter:
       - User ID
@@ -59,7 +59,7 @@ def delete_user(user_id: str = None) -> Response:
 
 
 @app_views.route('/users', methods=['POST'], strict_slashes=False)
-def create_user() -> Response:
+def create_user() -> str:
     """ POST /api/v1/users/
     JSON body:
       - email
@@ -100,7 +100,7 @@ def create_user() -> Response:
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
-def update_user(user_id: str = None) -> Response:
+def update_user(user_id: str = None) -> str:
     """ PUT /api/v1/users/:id
     Path parameter:
       - User ID
