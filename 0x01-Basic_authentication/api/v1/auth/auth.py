@@ -10,11 +10,14 @@ class Auth:
     """Auth class for handling authentication requirements."""
 
     def require_auth(self, path, excluded_paths):
-        """Determine if the given path requires authentication, considering wildcard patterns in excluded_paths.
+        """
+        Determine if the given path requires authentication,
+        considering wildcard patterns in excluded_paths.
 
         Args:
             path (Optional[str]): The requested path.
-            excluded_paths (List[str]): Paths that do not require authentication (with optional wildcards).
+            excluded_paths (List[str]): Paths that do not require
+                authentication (with optional wildcards).
 
         Returns:
             bool: True if the path requires authentication, False otherwise.
@@ -25,15 +28,23 @@ class Auth:
         # Normalize the path to ensure consistency
         normalized_path = path if path.endswith('/') else path + '/'
 
-        # Check if the normalized path matches any excluded path patterns using regex
+        """
+        Check if the normalized path matches any
+        excluded path patterns using regex
+        """
         for pattern in excluded_paths:
             # Convert wildcard pattern to a regex pattern
-            regex_pattern = re.escape(pattern)  # Escape special characters in the pattern
-            regex_pattern = regex_pattern.replace(r'\*', '.*')  # Replace '*' with '.*' for regex match
 
-            # Check if the normalized path matches the regex pattern
-            if re.match(regex_pattern + r'/?$', normalized_path):  # The '$' ensures the end of the string
-                return False  # Path matches an excluded pattern, no authentication required
+            # Escape special characters in the pattern
+            regex_pattern = re.escape(pattern)
+            # Replace '*' with '.*' for regex match
+            regex_pattern = regex_pattern.replace(r'\*', '.*')
+
+            """Check if the normalized path matches the regex pattern
+            and The '$' ensures the end of the string"""
+            if re.match(regex_pattern + r'/?$', normalized_path):
+                # Path matches an excluded pattern, no authentication required
+                return False
 
         # Path doesn't match any excluded pattern, authentication is required
         return True

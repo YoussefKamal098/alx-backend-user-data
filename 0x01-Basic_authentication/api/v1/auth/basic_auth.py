@@ -35,7 +35,9 @@ class BasicAuth(Auth):
     specific to basic authentication schemes.
     """
 
-    def extract_base64_authorization_header(self, authorization_header: str) -> Optional[str]:
+    def extract_base64_authorization_header(
+            self, authorization_header: str
+    ) -> Optional[str]:
         """
         Extract the base64-encoded authorization string from the
         Authorization header.
@@ -168,7 +170,9 @@ class BasicAuth(Auth):
             return None
 
         decoded_base64_authorization_header = \
-            self.decode_base64_authorization_header(base64_authorization_header)
+            self.decode_base64_authorization_header(
+                base64_authorization_header)
+
         if not decoded_base64_authorization_header:
             return None
 
