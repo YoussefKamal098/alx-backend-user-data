@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
 """
-Route module for the API
+API Route module
 """
-
 import os
-from flask import Flask, abort, request, jsonify, Response
+
+from flask import Flask, abort, request, jsonify
 from flask_cors import CORS
 
 from api.v1.views import app_views
 from api.v1.auth.auth import Auth
 from api.v1.auth.basic_auth import BasicAuth
 
-
+# Initialize Flask app and CORS
 app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
+"""
+Determine which authentication class to
+use based on AUTH_TYPE environment variable
+"""
 auth_type = os.getenv('AUTH_TYPE')
 auth = BasicAuth() if auth_type == 'basic_auth' else Auth()
 
+# Excluded paths for authentication
 EXCLUDED_PATHS = [
     '/api/v1/status/',
     '/api/v1/unauthorized/',
@@ -39,7 +44,7 @@ def handle_authentication() -> None:
 
 
 @app.errorhandler(404)
-def not_found(_error) -> Response:
+def not_found(_error) -> str:
     """Handle 404 Not Found error."""
     response = jsonify({"error": "Not Found"})
     response.status_code = 404
@@ -47,7 +52,7 @@ def not_found(_error) -> Response:
 
 
 @app.errorhandler(401)
-def unauthorized(_error) -> Response:
+def unauthorized(_error) -> str:
     """Handle 401 Unauthorized error."""
     response = jsonify({"error": "Unauthorized"})
     response.status_code = 401
@@ -55,7 +60,7 @@ def unauthorized(_error) -> Response:
 
 
 @app.errorhandler(400)
-def bad_request(error) -> Response:
+def bad_request(error) -> str:
     """Handle 400 Bad Request error."""
     response = jsonify({"error": error})
     response.status_code = 400
@@ -63,7 +68,7 @@ def bad_request(error) -> Response:
 
 
 @app.errorhandler(403)
-def forbidden(_error) -> Response:
+def forbidden(_error) -> str:
     """Handle 403 Forbidden error."""
     response = jsonify({"error": "Forbidden"})
     response.status_code = 403
