@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-""" User module
+"""
+User module
 """
 import hashlib
 from typing import List, Dict, Any, Optional
