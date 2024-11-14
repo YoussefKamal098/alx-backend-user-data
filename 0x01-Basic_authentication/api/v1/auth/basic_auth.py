@@ -92,7 +92,7 @@ class BasicAuth(Auth):
             self, decoded_base64_authorization_header: str
     ) -> Tuple[Optional[str], Optional[str]]:
         """
-        Extract the username and password from the
+        Extract the username or email and password from the
         decoded base64 authorization string.
 
         Args:
