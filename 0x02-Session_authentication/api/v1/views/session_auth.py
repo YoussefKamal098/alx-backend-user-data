@@ -3,6 +3,8 @@
 Session auth API
 """
 import os
+
+import flask
 from flask import jsonify, request, make_response
 from api.v1.views import app_views
 from models.user import User
@@ -53,7 +55,7 @@ def login() -> str:
     response = make_response(jsonify(user.to_json()))
 
     # Set the session ID in a cookie
-    session_name = os.getenv('SESSION_NAME', '_my_session_id')
+    session_name = flask.current_app.config['SESSION_NAME']
     response.set_cookie(session_name, session_id)
 
     return response
