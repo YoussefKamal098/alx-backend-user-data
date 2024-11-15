@@ -46,7 +46,7 @@ def handle_authentication() -> None:
 
     # Check for both Authorization header and Session cookie
     if (not auth.authorization_header(request) and
-        not auth.session_cookie(request)):
+            not auth.session_cookie(request)):
         abort(401)
 
     request.current_user = auth.current_user(request)
