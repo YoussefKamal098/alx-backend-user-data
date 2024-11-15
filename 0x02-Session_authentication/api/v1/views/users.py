@@ -2,7 +2,7 @@
 """
 Module of Users views API
 """
-from flask import abort, jsonify, request
+from flask import abort, jsonify, request, make_response
 from api.v1.views import app_views
 from models.user import User
 
@@ -14,7 +14,7 @@ def view_all_users() -> str:
       - list of all User objects JSON represented
     """
     all_users = [user.to_json() for user in User.all()]
-    return jsonify(all_users)
+    return make_response(jsonify(all_users), 200)
 
 
 @app_views.route('/users/<user_id>', methods=['GET'], strict_slashes=False)
@@ -26,7 +26,6 @@ def view_one_user(user_id: str = None) -> str:
       - User object JSON represented
       - 404 if the User ID doesn't exist
     """
-
     if user_id is None:
         abort(404)
 
@@ -34,13 +33,13 @@ def view_one_user(user_id: str = None) -> str:
         abort(404)
 
     if user_id == "me":
-        return jsonify(request.current_user.to_json())
+        return make_response(jsonify(request.current_user.to_json()), 200)
 
     user = User.get(user_id)
     if user is None:
         abort(404)
 
-    return jsonify(user.to_json())
+    return make_response(jsonify(user.to_json()), 200)
 
 
 @app_views.route('/users/<user_id>', methods=['DELETE'], strict_slashes=False)
@@ -49,7 +48,7 @@ def delete_user(user_id: str = None) -> str:
     Path parameter:
       - User ID
     Return:
-      - empty JSON is the User has been correctly deleted
+      - empty JSON if the User has been correctly deleted
       - 404 if the User ID doesn't exist
     """
     if user_id is None:
@@ -61,10 +60,7 @@ def delete_user(user_id: str = None) -> str:
 
     user.remove()
 
-    response = jsonify({})
-    response.status_code = 200
-
-    return response
+    return make_response(jsonify({}), 200)
 
 
 @app_views.route('/users', methods=['POST'], strict_slashes=False)
@@ -79,25 +75,19 @@ def create_user() -> str:
       - User object JSON represented
       - 400 if it can't create the new User
     """
-    request_json = request.get_json(slice=True)
+    request_json = request.get_json(silent=True)
 
     if not request_json:
-        response = jsonify({"error": "Wrong format"})
-        response.status_code = 400
-        return response
+        return make_response(jsonify({"error": "Wrong format"}), 400)
 
     email = request_json.get("email")
     password = request_json.get("password")
 
     if not email:
-        response = jsonify({"error": "email missing"})
-        response.status_code = 400
-        return response
+        return make_response(jsonify({"error": "email missing"}), 400)
 
     if not password:
-        response = jsonify({"error": "password missing"})
-        response.status_code = 400
-        return response
+        return make_response(jsonify({"error": "password missing"}), 400)
 
     try:
         user = User()
@@ -107,13 +97,11 @@ def create_user() -> str:
         user.last_name = request_json.get("last_name")
         user.save()
 
-        response = jsonify(user.to_json())
-        response.status_code = 201
-        return response
+        return make_response(jsonify(user.to_json()), 201)
     except Exception as err:
-        response = jsonify({"error": f"Can't create User: {err}"})
-        response.status_code = 400
-        return response
+        return make_response(
+            jsonify({"error": f"Can't create User: {err}"}), 400
+        )
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
@@ -136,19 +124,15 @@ def update_user(user_id: str = None) -> str:
     if user is None:
         abort(404)
 
-    request_json = request.get_json(slice=True)
+    request_json = request.get_json(silent=True)
     if not request_json:
-        response = jsonify({"error": "Wrong format"})
-        response.status_code = 400
-        return response
+        return make_response(jsonify({"error": "Wrong format"}), 400)
 
-    if request_json.get('first_name') is not None:
-        user.first_name = request_json.get('first_name')
-    if request_json.get('last_name') is not None:
-        user.last_name = request_json.get('last_name')
+    if 'first_name' in request_json:
+        user.first_name = request_json['first_name']
+    if 'last_name' in request_json:
+        user.last_name = request_json['last_name']
 
     user.save()
 
-    response = jsonify(user.to_json())
-    response.status_code = 200
-    return response
+    return make_response(jsonify(user.to_json()), 200)
