@@ -17,14 +17,14 @@ the `current_user` method to provide the necessary functionality.
 import os
 import re
 from typing import List, Optional
-from abc import ABC, abstractmethod
 
 import flask
 
 from models.types import UserType
+from utils import override
 
 
-class Auth(ABC):
+class Auth:
     """
     Base class for handling authentication requirements in the API.
 
@@ -41,7 +41,7 @@ class Auth(ABC):
       must be implemented in subclasses.
     """
 
-    @abstractmethod
+    @override
     def current_user(
             self, _request: flask.Request = None
     ) -> Optional[UserType]:

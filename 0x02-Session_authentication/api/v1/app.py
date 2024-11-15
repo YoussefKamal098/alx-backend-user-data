@@ -31,6 +31,7 @@ auth = auth_factory.create_auth()
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
     '/api/v1/status/',
+    '/api/v1/auth_session/login/'
     '/api/v1/unauthorized/',
     '/api/v1/forbidden/'
 ]
@@ -39,10 +40,13 @@ EXCLUDED_PATHS = [
 @app.before_request
 def handle_authentication() -> None:
     """Authentication and authorization before each request."""
+    # Check if request path is excluded from authentication
     if not auth or not auth.require_auth(request.path, EXCLUDED_PATHS):
         return
 
-    if not auth.authorization_header(request):
+    # Check for both Authorization header and Session cookie
+    if (not auth.authorization_header(request) and
+        not auth.session_cookie(request)):
         abort(401)
 
     request.current_user = auth.current_user(request)
