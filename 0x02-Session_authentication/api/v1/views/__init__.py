@@ -21,6 +21,7 @@ app_views = Blueprint("app_views", __name__, url_prefix="/api/v1")
 # Import route functions from different view modules
 from api.v1.views.index import *
 from api.v1.views.users import *
+from api.v1.views.session_auth import *
 
 """
 Load user data from file, assuming this method loads data into the User model

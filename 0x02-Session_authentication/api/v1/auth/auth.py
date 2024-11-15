@@ -14,7 +14,6 @@ current user, but does not
 implement any actual authentication logic. Subclasses must implement
 the `current_user` method to provide the necessary functionality.
 """
-import os
 import re
 from typing import List, Optional
 
@@ -40,7 +39,6 @@ class Auth:
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
     """
-    SESSION_COOKIE_NAME = os.getenv("SESSION_NAME", "_my_session_id")
 
     @override
     def current_user(
@@ -129,19 +127,23 @@ class Auth:
         """
         Retrieve the session cookie value from the request.
 
-        This method returns the value of the session cookie, which is
-        defined by the environment variable SESSION_NAME. If the request
-        or the cookie is not present, it returns None.
+        This method attempts to retrieve the value of the session cookie from
+        the request. The name of the session cookie is defined by the environment
+        variable `SESSION_NAME`, which is typically set in the Flask
+        app's configuration. If the request is not provided or if the
+        session cookie is not found, the method will return None.
 
         Args:
-            request (Optional[flask.Request]): The request object.
+           request (Optional[flask.Request]):
+                The request object that contains the cookies.
+                If not provided, the method will attempt to
+                retrieve the cookie from the current request.
 
         Returns:
-            str: The value of the session cookie if available, else None.
-        """
+           Optional[str]: The value of the session cookie if it exists,
+                otherwise None.
+       """
         if request is None:
             return None
 
-        # Default cookie name is '_my_session_id'
-        session_name = self.SESSION_COOKIE_NAME
-        return request.cookies.get(session_name)
+        return request.cookies.get(flask.current_app.config['SESSION_NAME'])
