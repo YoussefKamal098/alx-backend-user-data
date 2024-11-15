@@ -14,7 +14,7 @@ current user, but does not
 implement any actual authentication logic. Subclasses must implement
 the `current_user` method to provide the necessary functionality.
 """
-
+import os
 import re
 from typing import List, Optional
 from abc import ABC, abstractmethod
@@ -123,3 +123,24 @@ class Auth(ABC):
             return None
 
         return request.headers.get('Authorization')
+
+    def session_cookie(self, request: flask.Request = None) -> Optional[str]:
+        """
+        Retrieve the session cookie value from the request.
+
+        This method returns the value of the session cookie, which is
+        defined by the environment variable SESSION_NAME. If the request
+        or the cookie is not present, it returns None.
+
+        Args:
+            request (Optional[flask.Request]): The request object.
+
+        Returns:
+            str: The value of the session cookie if available, else None.
+        """
+        if request is None:
+            return None
+
+        # Default cookie name is '_my_session_id'
+        session_name = os.getenv("SESSION_NAME", "_my_session_id")
+        return request.cookies.get(session_name)
