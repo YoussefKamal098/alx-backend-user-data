@@ -146,4 +146,4 @@ class Auth:
         if request is None:
             return None
 
-        return request.cookies.get('_cookie_cookie_dough')
+        return request.cookies.get('_hbnb_yelp_session_id')
