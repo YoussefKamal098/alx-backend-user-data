@@ -40,6 +40,7 @@ class Auth:
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
     """
+    SESSION_COOKIE_NAME = os.getenv("SESSION_NAME", "_my_session_id")
 
     @override
     def current_user(
@@ -142,5 +143,5 @@ class Auth:
             return None
 
         # Default cookie name is '_my_session_id'
-        session_name = os.getenv("SESSION_NAME", "_my_session_id")
+        session_name = self.SESSION_COOKIE_NAME
         return request.cookies.get(session_name)

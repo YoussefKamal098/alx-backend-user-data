@@ -8,12 +8,14 @@ functionality related to session-based authentication.
 
 Currently, it inherits from Auth without any additional logic.
 """
+import os
 import uuid
 from typing import Optional
 
 import flask
 
 from api.v1.auth.auth import Auth
+from models.user import User
 from models.types import UserType
 
 
@@ -21,7 +23,6 @@ class SessionAuth(Auth):
     """
     SessionAuth class inheriting from Auth, placeholder for future logic.
     """
-
     user_id_by_session_id = {}
 
     def create_session(self, user_id: str = None) -> Optional[str]:
@@ -54,7 +55,7 @@ class SessionAuth(Auth):
         return self.user_id_by_session_id.get(session_id)
 
     def current_user(
-            self, _request: flask.Request = None
+            self, request: flask.Request = None
     ) -> Optional[UserType]:
         """
         Retrieve the current user based on the request.
@@ -64,10 +65,21 @@ class SessionAuth(Auth):
         By default, it returns None, indicating no authenticated user.
 
         Args:
-            _request (Optional[flask.Request]): The request object.
+            request (Optional[flask.Request]): The request object.
 
         Returns:
             Optional[UserType]: The current authenticated user if
                 available, else None.
         """
-        pass
+        # Retrieve the session ID from the cookie
+        session_id = self.session_cookie(request)
+        if session_id is None:
+            return None
+
+        # Retrieve the user ID from the session ID
+        user_id = self.user_id_for_session_id(session_id)
+        if user_id is None:
+            return None
+
+        # Retrieve the user instance from the database using User.get()
+        return User.get(user_id)  # Assuming User.get() retrieves a user by ID
