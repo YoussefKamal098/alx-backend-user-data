@@ -2,8 +2,6 @@
 """
 Session auth API
 """
-import os
-
 import flask
 from flask import jsonify, request, make_response
 from api.v1.views import app_views
@@ -54,7 +52,12 @@ def login() -> str:
     # Prepare the response with user details
     response = make_response(jsonify(user.to_json()))
 
+    #
+    session_name = flask.current_app.config.get(
+        'SESSION_NAME', auth.session_name
+    )
+
     # Set the session ID in a cookie
-    response.set_cookie(flask.current_app.config['SESSION_NAME'], session_id)
+    response.set_cookie(session_name, session_id)
 
     return response

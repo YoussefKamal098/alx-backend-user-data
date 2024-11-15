@@ -39,7 +39,27 @@ class Auth:
     - Extract the `Authorization` header from an incoming request.
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
+
+
+    Attributes:
+        session_name (str): The name of the session cookie used for
+            authentication. The value is fetched from the Flask app's
+            configuration (`SESSION_NAME`) or from the environment variable
+            `SESSION_NAME`. If neither is set, it defaults to
+            '_my_session_id'.
     """
+
+    def __init__(self):
+        """
+        Initialize the Auth class.
+
+        This method sets the `session_name` attribute, which determines
+        the name of the session cookie used in authentication. It fetches
+        the value from the environment variable `SESSION_NAME`. If not set,
+        the default value '_my_session_id' is used.
+        """
+        self.session_name = os.getenv('SESSION_NAME', '_my_session_id')
+
 
     @override
     def current_user(
@@ -147,8 +167,4 @@ class Auth:
         if request is None:
             return None
 
-        session_name = flask.current_app.config.get(
-            'SESSION_NAME',
-            os.getenv('SESSION_NAME', '_my_session_id')
-        )
-        return request.cookies.get(session_name)
+        return request.cookies.get(self.session_name)
