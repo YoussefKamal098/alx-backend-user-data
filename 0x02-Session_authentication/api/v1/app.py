@@ -31,7 +31,7 @@ auth = auth_factory.create_auth()
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
     '/api/v1/status/',
-    '/api/v1/auth_session/login/'
+    '/api/v1/auth_session/login/',
     '/api/v1/unauthorized/',
     '/api/v1/forbidden/'
 ]
