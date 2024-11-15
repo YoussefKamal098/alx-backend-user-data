@@ -38,7 +38,15 @@ class Auth:
     - Extract the `Authorization` header from an incoming request.
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
+
+    Attributes:
+        session_name (str): The name of the session cookie. Defaults to
+            '_my_session_id'
     """
+
+    def __init__(self):
+        self.session_name = "_my_session_id"
+
 
     @override
     def current_user(
@@ -146,4 +154,4 @@ class Auth:
         if request is None:
             return None
 
-        return request.cookies.get(flask.current_app.config['SESSION_NAME'])
+        return request.cookies.get(self.session_name)

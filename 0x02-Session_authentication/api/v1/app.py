@@ -15,7 +15,6 @@ from api.v1.auth.auth_factory_provider import DefaultAuthFactoryProvider
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
-app.config['SESSION_NAME'] = os.getenv('SESSION_NAME', '_my_session_id')
 
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
@@ -29,6 +28,8 @@ auth_factory = auth_factory_provider.get_factory(auth_type)
 
 # Create the corresponding Auth instance
 auth = auth_factory.create_auth()
+
+auth.session_name = os.getenv('SESSION_NAME', '_my_session_id')
 
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
