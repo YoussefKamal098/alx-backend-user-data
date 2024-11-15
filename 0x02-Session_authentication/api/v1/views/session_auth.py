@@ -3,7 +3,7 @@
 Session auth API
 """
 import flask
-from flask import jsonify, request, make_response
+from flask import jsonify, request, make_response, abort
 from api.v1.views import app_views
 from models.user import User
 
@@ -61,3 +61,19 @@ def login() -> str:
     response.set_cookie(session_name, session_id)
 
     return response
+
+@app_views.route('/auth_session/logout', methods=['DELETE'], strict_slashes=False)
+def logout() -> str:
+    """
+    Handle user logout by destroying their session.
+
+    Returns:
+        flask.Response: A JSON response with an empty dictionary and
+            status 200 if the session is destroyed, or 404 otherwise.
+    """
+    from api.v1.app import auth
+
+    if not auth.destroy_session(request):
+        abort(404)
+
+    return make_response(jsonify({}), 200)
