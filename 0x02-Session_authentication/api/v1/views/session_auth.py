@@ -3,7 +3,7 @@
 Session auth API
 """
 import flask
-from flask import jsonify, request
+from flask import jsonify, request, Response
 from api.v1.views import app_views
 from models.user import User
 from api.v1.app import auth
