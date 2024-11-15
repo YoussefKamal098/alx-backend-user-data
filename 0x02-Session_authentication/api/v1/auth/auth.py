@@ -14,6 +14,7 @@ current user, but does not
 implement any actual authentication logic. Subclasses must implement
 the `current_user` method to provide the necessary functionality.
 """
+import os
 import re
 from typing import List, Optional
 
@@ -154,4 +155,4 @@ class Auth:
         if request is None:
             return None
 
-        return request.cookies.get(self.session_name)
+        return request.cookies.get(os.getenv('SESSION_NAME', '_my_session_id'))
