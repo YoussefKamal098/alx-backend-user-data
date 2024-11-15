@@ -60,7 +60,6 @@ class Auth:
         """
         self.session_name = os.getenv('SESSION_NAME', '_my_session_id')
 
-
     @override
     def current_user(
             self, _request: flask.Request = None
