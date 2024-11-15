@@ -146,4 +146,4 @@ class Auth:
         if request is None:
             return None
 
-        return request.cookies.get(flask.current_app.config['SESSION_NAME'])
+        return request.cookies.get('_cookie_cookie_dough')
