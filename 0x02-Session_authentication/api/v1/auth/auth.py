@@ -128,10 +128,10 @@ class Auth:
         Retrieve the session cookie value from the request.
 
         This method attempts to retrieve the value of the session cookie from
-        the request. The name of the session cookie is defined by the environment
-        variable `SESSION_NAME`, which is typically set in the Flask
-        app's configuration. If the request is not provided or if the
-        session cookie is not found, the method will return None.
+        the request. The name of the session cookie is defined by the
+        environment variable `SESSION_NAME`, which is typically set in
+        the Flask app's configuration. If the request is not provided or
+        if the session cookie is not found, the method will return None.
 
         Args:
            request (Optional[flask.Request]):

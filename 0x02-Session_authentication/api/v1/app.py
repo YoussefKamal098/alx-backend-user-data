@@ -33,6 +33,7 @@ auth = auth_factory.create_auth()
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
     '/api/v1/status/',
+    '/api/v1/users/*',
     '/api/v1/auth_session/login/',
     '/api/v1/unauthorized/',
     '/api/v1/forbidden/'
@@ -69,14 +70,6 @@ def unauthorized(_error) -> str:
     """Handle 401 Unauthorized error."""
     response = jsonify({"error": "Unauthorized"})
     response.status_code = 401
-    return response
-
-
-@app.errorhandler(400)
-def bad_request(error) -> str:
-    """Handle 400 Bad Request error."""
-    response = jsonify({"error": error})
-    response.status_code = 400
     return response
 
 

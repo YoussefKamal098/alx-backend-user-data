@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ Module of Users views API """
-from flask import abort, jsonify, request
+from flask import abort, jsonify, request, make_response
 from api.v1.views import app_views
 from models.user import User
 
@@ -59,10 +59,7 @@ def delete_user(user_id: str = None) -> str:
 
     user.remove()
 
-    response = jsonify({})
-    response.status_code = 200
-
-    return response
+    return make_response(jsonify({}), 200)
 
 
 @app_views.route('/users', methods=['POST'], strict_slashes=False)
@@ -80,15 +77,15 @@ def create_user() -> str:
     request_json = request.get_json(slice=True)
 
     if not request_json:
-        abort(400, "Wrong format")
+        return make_response(jsonify({"error": "Wrong format"}), 400)
 
     email = request_json.get("email")
     password = request_json.get("password")
 
     if not email:
-        abort(400, "email missing")
+        return make_response(jsonify({"error": "email missing"}), 400)
     if not password:
-        abort(400, "password missing")
+        return make_response(jsonify({"error": "password missing"}), 400)
 
     try:
         user = User()
@@ -98,12 +95,11 @@ def create_user() -> str:
         user.last_name = request_json.get("last_name")
         user.save()
 
-        response = jsonify(user.to_json())
-        response.status_code = 201
-
-        return response
+        return make_response(jsonify(user.to_json()), 201)
     except Exception as err:
-        abort(400, f"Can't create User: {err}")
+        return make_response(
+            jsonify({"error": f"Can't create User: {err}"}), 400
+        )
 
 
 @app_views.route('/users/<user_id>', methods=['PUT'], strict_slashes=False)
@@ -128,7 +124,7 @@ def update_user(user_id: str = None) -> str:
 
     request_json = request.get_json(slice=True)
     if not request_json:
-        abort(400, "Wrong format")
+        return make_response(jsonify({"error": "Wrong format"}), 400)
 
     if request_json.get('first_name') is not None:
         user.first_name = request_json.get('first_name')
@@ -137,7 +133,4 @@ def update_user(user_id: str = None) -> str:
 
     user.save()
 
-    response = jsonify(user.to_json())
-    response.status_code = 200
-
-    return response
+    return make_response(jsonify(user.to_json()), 200)
