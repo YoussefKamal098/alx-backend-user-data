@@ -23,6 +23,20 @@ class SessionAuth(Auth):
     def current_user(
             self, _request: flask.Request = None
     ) -> Optional[UserType]:
+        """
+        Retrieve the current user based on the request.
+
+        This method is intended to be overridden in subclasses to extract
+        the user from the request based on the authentication mechanism.
+        By default, it returns None, indicating no authenticated user.
+
+        Args:
+            _request (Optional[flask.Request]): The request object.
+
+        Returns:
+            Optional[UserType]: The current authenticated user if
+                available, else None.
+        """
         pass
 
 
