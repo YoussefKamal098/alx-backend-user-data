@@ -55,7 +55,6 @@ def login() -> str:
     response = make_response(jsonify(user.to_json()))
 
     # Set the session ID in a cookie
-    session_name = flask.current_app.config['SESSION_NAME']
-    response.set_cookie(session_name, session_id)
+    response.set_cookie(flask.current_app.config['SESSION_NAME'], session_id)
 
     return response
