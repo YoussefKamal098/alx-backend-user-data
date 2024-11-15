@@ -29,8 +29,6 @@ auth_factory = auth_factory_provider.get_factory(auth_type)
 # Create the corresponding Auth instance
 auth = auth_factory.create_auth()
 
-auth.session_name = os.getenv('SESSION_NAME', '_my_session_id')
-
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
     '/api/v1/status/',

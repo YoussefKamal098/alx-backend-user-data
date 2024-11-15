@@ -45,10 +45,6 @@ class Auth:
             '_my_session_id'
     """
 
-    def __init__(self):
-        self.session_name = "_my_session_id"
-
-
     @override
     def current_user(
             self, _request: flask.Request = None
