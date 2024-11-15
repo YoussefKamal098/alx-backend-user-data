@@ -3,7 +3,7 @@
 Flask application for managing API requests with authentication.
 Handles authentication using dynamic auth type based on AUTH_TYPE
 environment variable. Includes error handling
-for 400, 401, 403, and 404 HTTP status codes.
+for 400, 401, and 404 HTTP status codes.
 """
 import os
 
