@@ -39,10 +39,6 @@ class Auth:
     - Extract the `Authorization` header from an incoming request.
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
-
-    Attributes:
-        session_name (str): The name of the session cookie. Defaults to
-            '_my_session_id'
     """
 
     @override
