@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-API Route module
+Flask application for managing API requests with authentication.
+Handles authentication using dynamic auth type based on AUTH_TYPE
+environment variable. Includes error handling
+for 400, 401, 403, and 404 HTTP status codes.
 """
 import os
 
@@ -8,20 +11,22 @@ from flask import Flask, abort, request, jsonify
 from flask_cors import CORS
 
 from api.v1.views import app_views
-from api.v1.auth.auth import Auth
-from api.v1.auth.basic_auth import BasicAuth
+from api.v1.auth.auth_factory_provider import DefaultAuthFactoryProvider
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
 app.register_blueprint(app_views)
 CORS(app, resources={r"/api/v1/*": {"origins": "*"}})
 
-"""
-Determine which authentication class to
-use based on AUTH_TYPE environment variable
-"""
-auth_type = os.getenv('AUTH_TYPE')
-auth = BasicAuth() if auth_type == 'basic_auth' else Auth()
+# Initialize the factory provider
+auth_factory_provider = DefaultAuthFactoryProvider()
+
+# Get the factory based on the environment variable AUTH_TYPE
+auth_type = os.getenv('AUTH_TYPE', 'basic_auth')
+auth_factory = auth_factory_provider.get_factory(auth_type)
+
+# Create the corresponding Auth instance
+auth = auth_factory.create_auth()
 
 # Excluded paths for authentication
 EXCLUDED_PATHS = [

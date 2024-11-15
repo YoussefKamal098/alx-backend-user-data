@@ -160,7 +160,7 @@ class BasicAuth(Auth):
         if not request:
             return None
 
-        authorization_header = request.headers.get('Authorization')
+        authorization_header = self.authorization_header(request)
         if not authorization_header:
             return None
 
