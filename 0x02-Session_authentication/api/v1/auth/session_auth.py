@@ -8,13 +8,21 @@ functionality related to session-based authentication.
 
 Currently, it inherits from Auth without any additional logic.
 """
+from typing import Optional
+
+import flask
+
 from api.v1.auth.auth import Auth
+from models.types import UserType
 
 
 class SessionAuth(Auth):
     """
     SessionAuth class inheriting from Auth, placeholder for future logic.
     """
-    pass
+    def current_user(
+            self, _request: flask.Request = None
+    ) -> Optional[UserType]:
+        pass
 
 
