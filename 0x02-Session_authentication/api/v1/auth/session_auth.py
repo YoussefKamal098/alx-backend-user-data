@@ -38,5 +38,3 @@ class SessionAuth(Auth):
                 available, else None.
         """
         pass
-
-
