@@ -8,7 +8,6 @@ functionality related to session-based authentication.
 
 Currently, it inherits from Auth without any additional logic.
 """
-import os
 import uuid
 from typing import Optional
 
