@@ -147,5 +147,10 @@ class Auth:
         if request is None:
             return None
 
-        session_name = flask.current_app.config['SESSION_NAME']
+        session_name = (
+                flask.current_app.config['SESSION_NAME'] or
+                os.getenv('SESSION_NAME') or
+                '_my_session_id'
+        )
+
         return request.cookies.get(session_name)
