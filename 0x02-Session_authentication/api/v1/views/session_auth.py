@@ -1,7 +1,7 @@
-# #!/usr/bin/env python3
-# """
-# Session auth API
-# """
+#!/usr/bin/env python3
+"""
+Session auth API
+"""
 # import os
 # from flask import jsonify, request
 # from api.v1.views import app_views
