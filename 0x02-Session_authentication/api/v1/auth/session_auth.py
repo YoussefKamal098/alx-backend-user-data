@@ -8,6 +8,7 @@ functionality related to session-based authentication.
 
 Currently, it inherits from Auth without any additional logic.
 """
+import uuid
 from typing import Optional
 
 import flask
@@ -20,6 +21,31 @@ class SessionAuth(Auth):
     """
     SessionAuth class inheriting from Auth, placeholder for future logic.
     """
+
+    user_id_by_session_id = {}
+
+    def create_session(self, user_id: str = None) -> Optional[str]:
+        """
+        Create a new session ID for the given user ID and store it
+        in the user_id_by_session_id dictionary.
+
+        Args:
+            user_id (str, optional): The user ID to create a session for.
+                Defaults to None.
+
+        Returns:
+            str: The session ID if user_id is valid, else None.
+        """
+        if user_id is None or not isinstance(user_id, str):
+            return None
+
+        # Generate a new session ID
+        session_id = str(uuid.uuid4())
+
+        self.user_id_by_session_id[session_id] = user_id
+
+        return session_id
+
     def current_user(
             self, _request: flask.Request = None
     ) -> Optional[UserType]:
