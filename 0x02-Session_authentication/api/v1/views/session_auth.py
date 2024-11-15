@@ -3,7 +3,7 @@
 Session auth API
 """
 import flask
-from flask import jsonify, request, abort
+from flask import jsonify, request
 from api.v1.views import app_views
 from models.user import User
 from api.v1.app import auth
@@ -39,18 +39,20 @@ def login():
     password = request.form.get('password')
 
     if not email:
-        abort(400, "email missing")
+        return jsonify({"error": "email missing"}), 400
     if not password:
-        abort(400, "password missing")
+        return jsonify({"error": "password missing"}), 400
 
     # Retrieve the User instance based on the email
-    user: User= User.search(email)[0]
-    if user is None:
-        abort(404,  "no user found for this email")
+    users = User.search(email)
+    if not users:
+        return jsonify({"error": "no user found for this email"}), 404
+
+    user: User = users[0]
 
     # Check the password
     if not user.is_valid_password(password):
-        abort(401, "wrong password")
+        return jsonify({"error": "wrong password"}), 401
 
     # Create a session for the user
     session_id = auth.create_session(user.id)
