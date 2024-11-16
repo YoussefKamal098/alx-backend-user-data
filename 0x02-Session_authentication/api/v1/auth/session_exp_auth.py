@@ -94,7 +94,7 @@ class SessionExpAuth(SessionAuth):
             return None
 
         if not session.get("created_at"):
-            del self.user_id_by_session_id[session_id]
+            self.user_id_by_session_id.expire_key(session_id)
             return None
 
         return session.get('user_id')
@@ -123,19 +123,19 @@ class ExpiringDict:
 
         if not created_at:
             # raise KeyError(f"{key} does not have a creation timestamp.")
-            self._expire_key(key)
+            self.expire_key(key)
             return None
 
         # Check if session is expired
         if not self._is_valid(key):
             # Session expired, delete the key and raise an exception
-            self._expire_key(key)
+            self.expire_key(key)
             # raise KeyError(f"{key} has expired and been removed.")
             return None
 
         return value['value']
 
-    def _expire_key(self, key):
+    def expire_key(self, key):
         """
         Delete a session key when it expires.
         """
@@ -216,5 +216,4 @@ class ExpiringDict:
             return False
 
         expiration_time = created_at + timedelta(seconds=self.expiration_time)
-
         return expiration_time >= datetime.now()
