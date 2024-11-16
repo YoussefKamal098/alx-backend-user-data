@@ -14,6 +14,7 @@ from flask_cors import CORS
 from api.v1.views import app_views
 from api.v1.auth.auth_factory_provider import DefaultAuthFactoryProvider
 from api.v1.auth.auth import AuthInterface
+from dataclasses import dataclass
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
