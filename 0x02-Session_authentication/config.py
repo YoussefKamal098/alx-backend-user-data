@@ -36,6 +36,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from utils import parse_int_str
 
+
 @dataclass(frozen=True)
 class Config:
     """Singleton Configuration class for managing environment variables."""
@@ -45,7 +46,7 @@ class Config:
     API_PORT: str = os.getenv("API_PORT", "5000")
     SESSION_NAME: str = os.getenv("SESSION_NAME", "_my_session_id")
     SESSION_DURATION: int = parse_int_str(os.getenv("SESSION_DURATION", "0"))
-    AUTH_TYPE: str =  os.getenv('AUTH_TYPE', 'basic_auth')
+    AUTH_TYPE: str = os.getenv('AUTH_TYPE', 'basic_auth')
 
     _instance = None
 
