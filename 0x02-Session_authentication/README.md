@@ -41,6 +41,33 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 
 ---
 
+## Files
+
+### `models/`
+
+- **`base.py`**: Base model for API objects, handles serialization to file.
+- **`user.py`**: `User` model implementation.
+
+### `api/v1/`
+
+- **`app.py`**: Entry point for the API.
+- **`views/`**
+    - **`index.py`**: Provides basic API endpoints such as `/status` and `/stats`.
+    - **`users.py`**: Contains all endpoints related to user management.
+    - **`session_auth.py`**: Contains endpoints for session authentication management.
+- **`auth/`**
+    - **`auth.py`**: Authentication base class with utilities for managing authorization headers and session cookies.
+    - **`basic_auth.py`**: Implements Basic Authentication.
+    - **`session_auth.py`**: Implements session-based authentication, including creation and validation of sessions.
+    - **`session_exp_auth.py`**: Extends `SessionAuth` by adding session expiration logic.
+    - **`auth_factory.py`**: Abstract factory module for creating different authentication instances (`BasicAuth`, `SessionAuth`, and `SessionExpAuth`).
+    - **`auth_factory_provider.py`**: Manages authentication factories dynamically, allowing for the addition and removal of custom authentication mechanisms.
+
+### Root Directory
+
+- **`utils.py`**: **Utility module** that includes helper functions and decorators such as `@override` to enforce subclass method overriding.
+
+
 ## Features Implemented
 
 ### 1. **Basic Authentication**
