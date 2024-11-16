@@ -110,8 +110,6 @@ class ExpiringDict:
         """
         Retrieve an item by key, but remove it if it's expired.
         """
-        print(self.__str__())
-
         if key not in self._data:
             # raise KeyError(f"{key} not found in the dictionary.")
             return None
