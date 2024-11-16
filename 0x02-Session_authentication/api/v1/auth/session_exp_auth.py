@@ -200,7 +200,6 @@ class ExpiringDict:
         """
         Helper method to check if a key's session is valid (not expired).
         """
-
         if self.expiration_time <= 0:
             return True
 
