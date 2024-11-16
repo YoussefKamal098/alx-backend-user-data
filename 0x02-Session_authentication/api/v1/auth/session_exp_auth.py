@@ -93,7 +93,11 @@ class SessionExpAuth(SessionAuth):
         if not session:
             return None
 
-        return session['user_id']
+        if not session.get("created_at"):
+            del self.user_id_by_session_id[session_id]
+            return None
+
+        return session.get('user_id')
 
 
 class ExpiringDict:
@@ -119,6 +123,7 @@ class ExpiringDict:
 
         if not created_at:
             # raise KeyError(f"{key} does not have a creation timestamp.")
+            self._expire_key(key)
             return None
 
         # Check if session is expired
