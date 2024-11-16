@@ -200,6 +200,10 @@ class ExpiringDict:
         """
         Helper method to check if a key's session is valid (not expired).
         """
+
+        if self.expiration_time <= 0:
+            return True
+
         if key not in self._data:
             return False
 
@@ -211,4 +215,4 @@ class ExpiringDict:
 
         expiration_time = created_at + timedelta(seconds=self.expiration_time)
 
-        return self.expiration_time >= 0 and expiration_time >= datetime.now()
+        return expiration_time >= datetime.now()
