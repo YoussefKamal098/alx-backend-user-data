@@ -5,7 +5,7 @@ User class for managing user data
 from typing import List, Dict, Any, Optional
 
 from models.base import Base
-from utils import encrypt_password
+from utils import encrypt_sha256
 
 
 class User(Base):
@@ -33,13 +33,13 @@ class User(Base):
         if not isinstance(pwd, str) or not pwd:
             self._password = None
         else:
-            self._password = encrypt_password(pwd)
+            self._password = encrypt_sha256(pwd)
 
     def is_valid_password(self, pwd: str) -> bool:
         """Checks if the provided password matches the stored password."""
         if not isinstance(pwd, str) or not pwd or not self.password:
             return False
-        return encrypt_password(pwd) == self.password
+        return encrypt_sha256(pwd) == self.password
 
     def display_name(self) -> str:
         """Generates a display name based on the user's attributes."""

@@ -25,11 +25,10 @@ and other session management methods from `SessionAuth`.
     - Deletes entries that have expired based on the provided expiration time.
     - Prevents iteration and size retrieval.
 """
-
-import os
 from datetime import datetime, timedelta
 
 from api.v1.auth.session_auth import SessionAuth
+from config import config
 
 
 class SessionExpAuth(SessionAuth):
@@ -47,12 +46,7 @@ class SessionExpAuth(SessionAuth):
         cast to an integer, defaults to 0.
         """
         super().__init__()
-
-        try:
-            self.session_duration = int(os.getenv("SESSION_DURATION", 0))
-        except ValueError:
-            self.session_duration = 0
-
+        self.session_duration = config.SESSION_DURATION
         self.user_id_by_session_id = ExpiringDict(self.session_duration)
 
     def create_session(self, user_id=None):

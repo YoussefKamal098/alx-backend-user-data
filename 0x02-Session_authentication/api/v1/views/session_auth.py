@@ -30,6 +30,7 @@ from flask import jsonify, request, make_response, abort
 from api.v1.views import app_views
 from api.v1.auth.session_auth import SessionAuthInterface
 from models.user import User
+from config import config
 
 
 @app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
@@ -55,7 +56,7 @@ def session_login() -> str:
         )
 
     # Check if the user is already logged in
-    session_id = request.cookies.get(auth.session_name)
+    session_id = request.cookies.get(config.SESSION_NAME)
     if session_id and auth.user_id_for_session_id(session_id):
         return make_response(
             jsonify({"error": "User already logged in"}), 400
@@ -89,12 +90,8 @@ def session_login() -> str:
     # Prepare the response with user details
     response = make_response(jsonify(user.to_json()))
 
-    session_name = flask.current_app.config.get(
-        'SESSION_NAME', auth.session_name
-    )
-
     # Set the session ID in a cookie
-    response.set_cookie(session_name, session_id)
+    response.set_cookie(config.SESSION_NAME, session_id)
 
     return response
 
@@ -119,7 +116,7 @@ def session_logout() -> str:
         )
 
     # Check if the user is logged in
-    session_id = request.cookies.get(auth.session_name)
+    session_id = request.cookies.get(config.SESSION_NAME)
     if not session_id or not auth.user_id_for_session_id(session_id):
         return make_response(
             jsonify({"error": "No active session found"}), 404

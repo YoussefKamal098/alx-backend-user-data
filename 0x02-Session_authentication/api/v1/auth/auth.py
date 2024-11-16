@@ -30,7 +30,6 @@ Methods in `Auth`:
       request.
     - session_cookie: Retrieves the session cookie from the request.
 """
-import os
 import re
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -38,6 +37,7 @@ from typing import List, Optional
 import flask
 
 from models.types import UserType
+from config import config
 from utils import override
 
 
@@ -48,26 +48,7 @@ class AuthInterface(ABC):
     This interface defines the methods that must be implemented by any
     authentication class, such as BasicAuth, SessionAuth,
     or custom auth mechanisms.
-
-    Attributes:
-        session_name (str): The name of the session cookie used for
-            authentication. The value is fetched from the Flask app's
-            configuration (`SESSION_NAME`) or from the environment variable
-            `SESSION_NAME`. If neither is set, it defaults to
-            '_my_session_id'.
-
     """
-
-    def __init__(self):
-        """
-        Initialize the Auth class.
-
-        This method sets the `session_name` attribute, which determines
-        the name of the session cookie used in authentication. It fetches
-        the value from the environment variable `SESSION_NAME`. If not set,
-        the default value '_my_session_id' is used.
-        """
-        self.session_name = os.getenv('SESSION_NAME', '_my_session_id')
 
     @abstractmethod
     def current_user(
@@ -255,4 +236,4 @@ class Auth(AuthInterface):
         if request is None:
             return None
 
-        return request.cookies.get(self.session_name)
+        return request.cookies.get(config.SESSION_NAME)

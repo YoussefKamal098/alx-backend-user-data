@@ -26,7 +26,6 @@ Methods in `SessionAuth`:
     - current_user: Retrieves the current authenticated user based on the
       session ID.
 """
-
 import uuid
 from abc import ABC, abstractmethod
 from typing import Optional
