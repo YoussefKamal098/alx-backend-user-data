@@ -7,11 +7,13 @@ for 400, 401, and 404 HTTP status codes.
 """
 import os
 
+import flask
 from flask import Flask, abort, request, jsonify
 from flask_cors import CORS
 
 from api.v1.views import app_views
 from api.v1.auth.auth_factory_provider import DefaultAuthFactoryProvider
+from api.v1.auth.auth import AuthInterface
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
@@ -28,7 +30,7 @@ auth_type = os.getenv('AUTH_TYPE', 'basic_auth')
 auth_factory = auth_factory_provider.get_factory(auth_type)
 
 # Create the corresponding Auth instance
-auth = auth_factory.create_auth()
+app.auth = auth_factory.create_auth()
 
 # Excluded paths for authentication
 EXCLUDED_PATHS = [
@@ -43,6 +45,8 @@ EXCLUDED_PATHS = [
 def handle_authentication() -> None:
     """Authentication and authorization before each request."""
     # Check if request path is excluded from authentication
+    auth: AuthInterface = flask.current_app.auth
+
     if not auth or not auth.require_auth(request.path, EXCLUDED_PATHS):
         return
 

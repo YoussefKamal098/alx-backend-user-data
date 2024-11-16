@@ -1,15 +1,39 @@
 #!/usr/bin/env python3
 """
-Session auth API
+Session Authentication API
+
+This module defines two routes for handling user authentication sessions:
+- `/auth_session/login`: A POST endpoint for logging in users via email and
+    password.
+- `/auth_session/logout`: A DELETE endpoint for logging out users by
+    destroying their session.
+
+Each endpoint performs session management tasks such as validating
+credentials, creating or destroying sessions, and setting or clearing
+session cookies.
+
+Routes:
+    - POST /auth_session/login: Authenticates a user, creates a session,
+        and sets the session ID in a cookie.
+    - DELETE /auth_session/logout: Logs out a user by destroying their
+        session and clearing the session cookie.
+
+Functions:
+    login: Handles the user login process by validating email and password,
+        creating a session, and setting a session ID in a cookie.
+    logout: Handles user logout by destroying the user's session and
+        clearing the session cookie.
 """
+
 import flask
 from flask import jsonify, request, make_response, abort
 from api.v1.views import app_views
+from api.v1.auth.session_auth import SessionAuthInterface
 from models.user import User
 
 
 @app_views.route('/auth_session/login', methods=['POST'], strict_slashes=False)
-def login() -> str:
+def session_login() -> str:
     """
     Handles user login by authenticating with email and password.
 
@@ -22,7 +46,20 @@ def login() -> str:
        and the session ID set in a cookie, or an error response
        with the corresponding HTTP status code.
     """
-    from api.v1.app import auth
+    auth: SessionAuthInterface = flask.current_app.auth
+
+    # Ensure `auth` is an instance of `SessionAuthInterface`
+    if not isinstance(auth, SessionAuthInterface):
+        return make_response(
+            jsonify({"error": "Session management is not supported"}), 501
+        )
+
+    # Check if the user is already logged in
+    session_id = request.cookies.get(auth.session_name)
+    if session_id and auth.user_id_for_session_id(session_id):
+        return make_response(
+            jsonify({"error": "User already logged in"}), 400
+        )
 
     email = request.form.get('email')
     password = request.form.get('password')
@@ -52,7 +89,6 @@ def login() -> str:
     # Prepare the response with user details
     response = make_response(jsonify(user.to_json()))
 
-    #
     session_name = flask.current_app.config.get(
         'SESSION_NAME', auth.session_name
     )
@@ -66,7 +102,7 @@ def login() -> str:
 @app_views.route(
     '/auth_session/logout', methods=['DELETE'], strict_slashes=False
 )
-def logout() -> str:
+def session_logout() -> str:
     """
     Handle user logout by destroying their session.
 
@@ -74,7 +110,20 @@ def logout() -> str:
         flask.Response: A JSON response with an empty dictionary and
             status 200 if the session is destroyed, or 404 otherwise.
     """
-    from api.v1.app import auth
+    auth: SessionAuthInterface = flask.current_app.auth
+
+    # Ensure `auth` is an instance of `SessionAuthInterface`
+    if not isinstance(auth, SessionAuthInterface):
+        return make_response(
+            jsonify({"error": "Session management is not supported"}), 501
+        )
+
+    # Check if the user is logged in
+    session_id = request.cookies.get(auth.session_name)
+    if not session_id or not auth.user_id_for_session_id(session_id):
+        return make_response(
+            jsonify({"error": "No active session found"}), 404
+        )
 
     if not auth.destroy_session(request):
         abort(404)

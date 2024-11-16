@@ -1,27 +1,146 @@
 #!/usr/bin/env python3
 """
-SessionAuth Module
+Session Authentication Module
 
-This module defines the SessionAuth class, which is a subclass
-of the Auth class. This class serves as a placeholder for future logic and
-functionality related to session-based authentication.
+This module defines the `SessionAuthInterface` and `SessionAuth` classes for
+session-based authentication. The `SessionAuthInterface` outlines the
+required methods for session authentication, and `SessionAuth` implements
+these methods for managing user sessions using in-memory data storage.
 
-Currently, it inherits from Auth without any additional logic.
+Classes:
+    - SessionAuthInterface: An abstract base class that defines the
+      interface for session authentication.
+    - SessionAuth: A class that implements the session authentication
+      methods, using in-memory storage for session management.
+
+Methods in `SessionAuthInterface`:
+    - create_session: Creates a session for a user.
+    - destroy_session: Destroys the session for a user based on the request.
+    - user_id_for_session_id: Retrieves the user ID based on the session ID.
+    - current_user: Retrieves the current user based on the session.
+
+Methods in `SessionAuth`:
+    - create_session: Creates a session for the user and stores it in memory.
+    - destroy_session: Destroys the session using the provided request.
+    - user_id_for_session_id: Retrieves the user ID for the given session ID.
+    - current_user: Retrieves the current authenticated user based on the
+      session ID.
 """
+
 import uuid
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import flask
 
-from api.v1.auth.auth import Auth
+from api.v1.auth.auth import AuthInterface, Auth
 from models.user import User
 from models.types import UserType
 
 
-class SessionAuth(Auth):
+class SessionAuthInterface(AuthInterface, ABC):
     """
-    SessionAuth class inheriting from Auth, placeholder for future logic.
+    Interface for Session Authentication classes.
+
+    This abstract class defines the methods that must be implemented
+    by any session-based authentication class, such as
+    creating sessions, destroying sessions,
+    and retrieving user information based on sessions.
     """
+
+    @abstractmethod
+    def create_session(self, user_id: str = None) -> Optional[str]:
+        """
+        Create a new session for the given user ID.
+
+        Args:
+            user_id (str, optional): The user ID to create a session for.
+
+        Returns:
+            Optional[str]: The session ID if successful, None otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def destroy_session(self, request: flask.Request = None) -> bool:
+        """
+        Destroy a session for the user based on the provided request.
+
+        Args:
+            request (flask.Request): The request object.
+
+        Returns:
+            bool: True if session is successfully destroyed, otherwise False.
+        """
+        pass
+
+    @abstractmethod
+    def user_id_for_session_id(self, session_id: str = None) -> Optional[str]:
+        """
+        Retrieve the user ID associated with the given session ID.
+
+        Args:
+            session_id (str, optional): The session ID to look up.
+
+        Returns:
+            Optional[str]: The user ID if found, None otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def current_user(
+            self, request: flask.Request = None
+    ) -> Optional[UserType]:
+        """
+        Retrieve the current authenticated user based on the session.
+
+        Args:
+            request (flask.Request, optional): The request object.
+
+        Returns:
+            Optional[UserType]: The current authenticated user if available,
+                None otherwise.
+        """
+        pass
+
+
+class SessionAuth(Auth, SessionAuthInterface):
+    """
+     SessionAuth class for handling session-based authentication.
+
+     This class provides functionality to create and manage user sessions
+     using session IDs stored in memory. It is a subclass of the Auth class
+     and offers methods for creating, destroying, and retrieving sessions.
+
+     Currently, it operates using a dictionary to map session IDs to user IDs
+     and provides methods to interact with these sessions, such as creating a
+     new session for a user, destroying a session, and retrieving the user ID
+     associated with a session.
+
+     All session data is stored in memory, meaning that all sessions will be
+     lost when the application restarts.
+
+     Attributes:
+         user_id_by_session_id (dict): A dictionary mapping session IDs
+         to user IDs.
+
+     Methods:
+         create_session(user_id: str) -> Optional[str]:
+             Creates a new session for the given user ID and
+             returns the session ID.
+
+         destroy_session(request: flask.Request) -> bool:
+             Destroys the session for the user associated with the
+             provided request.
+
+         user_id_for_session_id(session_id: str) -> Optional[str]:
+             Retrieves the user ID associated with the given session ID.
+
+         current_user(request: flask.Request) -> Optional[UserType]:
+             Retrieves the current authenticated user based on the request,
+             using the session ID.
+     """
+
     user_id_by_session_id = {}
 
     def create_session(self, user_id: str = None) -> Optional[str]:

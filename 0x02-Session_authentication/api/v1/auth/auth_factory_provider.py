@@ -8,7 +8,11 @@ factories dynamically.
 
 from abc import ABC, abstractmethod
 
-from api.v1.auth.auth_factory import BasicAuthFactory, SessionAuthFactory
+from api.v1.auth.auth_factory import (
+    BasicAuthFactory,
+    SessionAuthFactory,
+    SessionExpAuthFactory
+)
 from api.v1.auth.auth_factory import AuthFactory
 
 
@@ -40,6 +44,7 @@ class DefaultAuthFactoryProvider(AuthFactoryProvider):
     FACTORY_MAP = {
         'basic_auth': BasicAuthFactory,
         'session_auth': SessionAuthFactory,
+        'session_exp_auth': SessionExpAuthFactory,
     }
 
     def get_factory(self, auth_type: str) -> AuthFactory:

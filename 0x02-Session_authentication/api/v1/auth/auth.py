@@ -1,21 +1,38 @@
 #!/usr/bin/env python3
 """
-Auth module for handling authentication in the API.
+Authentication Module
 
-This module contains the base `Auth` class that defines the common interface
-and methods for handling authentication in the API. It is intended to
-be extended by other authentication models such as
-`BasicAuth` or `SessionAuth`, which implement specific authentication
-mechanisms.
+This module defines the `AuthInterface` and `Auth` classes to handle
+authentication mechanisms within the API. The `AuthInterface` outlines
+the required methods for implementing authentication systems such as
+BasicAuth, SessionAuth, or custom authentication mechanisms. The `Auth`
+class serves as a base class for these mechanisms and provides common
+authentication logic, which can be extended by subclasses.
 
-The `Auth` class provides methods for determining whether authentication
-is required, extracting authorization headers, and identifying the
-current user, but does not
-implement any actual authentication logic. Subclasses must implement
-the `current_user` method to provide the necessary functionality.
+Classes:
+    - AuthInterface: An abstract class that defines the methods to be
+      implemented by authentication classes.
+    - Auth: A base class for handling common authentication logic and
+      requirements for API paths.
+
+Methods in `AuthInterface`:
+    - current_user: Retrieves the current authenticated user from the request.
+    - require_auth: Determines if the requested path requires authentication.
+    - authorization_header:Extracts the Authorization header from the request.
+    - session_cookie: Retrieves the session cookie from the request.
+
+Methods in `Auth`:
+    - current_user: Retrieves the current authenticated user, to be
+      implemented by subclasses.
+    - require_auth: Determines if a path requires authentication,
+      considering excluded paths and wildcard patterns.
+    - authorization_header: Retrieves the `Authorization` header from the
+      request.
+    - session_cookie: Retrieves the session cookie from the request.
 """
 import os
 import re
+from abc import ABC, abstractmethod
 from typing import List, Optional
 
 import flask
@@ -24,7 +41,98 @@ from models.types import UserType
 from utils import override
 
 
-class Auth:
+class AuthInterface(ABC):
+    """
+    Interface for handling authentication in the API.
+
+    This interface defines the methods that must be implemented by any
+    authentication class, such as BasicAuth, SessionAuth,
+    or custom auth mechanisms.
+
+    Attributes:
+        session_name (str): The name of the session cookie used for
+            authentication. The value is fetched from the Flask app's
+            configuration (`SESSION_NAME`) or from the environment variable
+            `SESSION_NAME`. If neither is set, it defaults to
+            '_my_session_id'.
+
+    """
+
+    def __init__(self):
+        """
+        Initialize the Auth class.
+
+        This method sets the `session_name` attribute, which determines
+        the name of the session cookie used in authentication. It fetches
+        the value from the environment variable `SESSION_NAME`. If not set,
+        the default value '_my_session_id' is used.
+        """
+        self.session_name = os.getenv('SESSION_NAME', '_my_session_id')
+
+    @abstractmethod
+    def current_user(
+            self, _request: flask.Request = None
+    ) -> Optional[UserType]:
+        """
+        Retrieve the current authenticated user based on the request.
+
+        Args:
+            _request (Optional[flask.Request]): The request object.
+
+        Returns:
+            Optional[UserType]: The current authenticated user if
+                available, else None.
+        """
+        pass
+
+    @abstractmethod
+    def require_auth(self, path: str, excluded_paths: List[str]) -> bool:
+        """
+        Determine if the given path requires authentication.
+
+        Args:
+            path (str): The requested path.
+            excluded_paths (List[str]): List of paths that do not
+                require authentication.
+
+        Returns:
+            bool: True if the path requires authentication, False otherwise.
+        """
+        pass
+
+    @abstractmethod
+    def authorization_header(
+            self, request: flask.Request = None
+    ) -> Optional[str]:
+        """
+        Retrieve the Authorization header from the request.
+
+        Args:
+            request (Optional[flask.Request]): The request object.
+
+        Returns:
+            Optional[str]: The Authorization header value if present,
+                else None.
+        """
+        pass
+
+    @abstractmethod
+    def session_cookie(self, request: flask.Request = None) -> Optional[str]:
+        """
+        Retrieve the session cookie value from the request.
+
+        Args:
+            request (Optional[flask.Request]): The request object that
+                contains the cookies.
+
+        Returns:
+            Optional[str]: The value of the session cookie if it exists,
+                otherwise None.
+        """
+        pass
+
+
+class Auth(AuthInterface):
     """
     Base class for handling authentication requirements in the API.
 
@@ -39,26 +147,7 @@ class Auth:
     - Extract the `Authorization` header from an incoming request.
     - Retrieve the current user based on the request, though this method
       must be implemented in subclasses.
-
-
-    Attributes:
-        session_name (str): The name of the session cookie used for
-            authentication. The value is fetched from the Flask app's
-            configuration (`SESSION_NAME`) or from the environment variable
-            `SESSION_NAME`. If neither is set, it defaults to
-            '_my_session_id'.
     """
-
-    def __init__(self):
-        """
-        Initialize the Auth class.
-
-        This method sets the `session_name` attribute, which determines
-        the name of the session cookie used in authentication. It fetches
-        the value from the environment variable `SESSION_NAME`. If not set,
-        the default value '_my_session_id' is used.
-        """
-        self.session_name = os.getenv('SESSION_NAME', '_my_session_id')
 
     @override
     def current_user(
