@@ -42,11 +42,23 @@ class Config:
     """Singleton Configuration class for managing environment variables."""
 
     # Configuration fields
-    API_HOST: str = os.getenv("API_HOST", "0.0.0.0")
-    API_PORT: str = os.getenv("API_PORT", "5000")
-    SESSION_NAME: str = os.getenv("SESSION_NAME", "_my_session_id")
-    SESSION_DURATION: int = parse_int_str(os.getenv("SESSION_DURATION", "0"))
-    AUTH_TYPE: str = os.getenv('AUTH_TYPE', 'basic_auth')
+    API_HOST: str = field(
+        default_factory=lambda: os.getenv("API_HOST", "0.0.0.0")
+    )
+    API_PORT: str = field(
+        default_factory=lambda: os.getenv("API_PORT", "5000")
+    )
+    SESSION_NAME: str = field(
+        default_factory=lambda: os.getenv("SESSION_NAME", "_my_session_id")
+    )
+    SESSION_DURATION: int = field(
+        default_factory=lambda: parse_int_str(
+            os.getenv("SESSION_DURATION", "0")
+        )
+    )
+    AUTH_TYPE: str = field(
+        default_factory=lambda: os.getenv('AUTH_TYPE', 'basic_auth')
+    )
 
     _instance: Optional["Config"] = field(
         default=None, init=False, repr=False
