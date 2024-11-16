@@ -48,7 +48,9 @@ class Config:
     SESSION_DURATION: int = parse_int_str(os.getenv("SESSION_DURATION", "0"))
     AUTH_TYPE: str = os.getenv('AUTH_TYPE', 'basic_auth')
 
-    _instance = None
+    _instance: Optional["Config"] = field(
+        default=None, init=False, repr=False
+    )  # Singleton instance
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is not None:
