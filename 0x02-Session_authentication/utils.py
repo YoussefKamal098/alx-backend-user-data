@@ -3,19 +3,19 @@
 utils Module
 
 This module provides utility functions and decorators that are commonly
-used across different parts of the project. This includes the `@override`
-decorator to enforce that methods must be overridden in subclasses.
-
-The `override` decorator ensures that subclasses implement critical methods
-that are required for the functionality of the application, raising a
-`NotImplementedError` if the subclass fails to provide an implementation.
+used across different parts of the project. It includes the `@override`
+decorator to enforce method overriding in subclasses and a function
+for encrypting passwords.
 
 Functions:
     override:
         Decorator to enforce that a method must be overridden in a subclass.
+    encrypt_password:
+        Encrypts a password using the SHA256 hashing algorithm.
 """
 
 import functools
+import hashlib
 
 
 def override(method):
@@ -24,14 +24,13 @@ def override(method):
 
     This decorator ensures that any subclass of a base class using
     the `@override` decorator must override the decorated method.
-    If the subclass does not provide
-    its implementation for the method, an error is raised.
+    If the subclass does not provide its implementation, an error is raised.
 
     Args:
         method (function): The method to be decorated.
 
     Returns:
-        function: The wrapper function that performs the override enforcement.
+        function: The wrapper function that enforces the override.
 
     Raises:
         NotImplementedError: If the method is not overridden in the subclass.
@@ -57,3 +56,7 @@ def override(method):
         return method(self, *args, **kwargs)
 
     return wrapper
+
+def encrypt_password(pwd: str) -> str:
+    """Encrypt the password using SHA256."""
+    return hashlib.sha256(pwd.encode()).hexdigest().lower()

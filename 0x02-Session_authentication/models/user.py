@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 """
-User module
+User class for managing user data
 """
-import hashlib
 from typing import List, Dict, Any, Optional
 
 from models.base import Base
+from utils import encrypt_password
 
 
 class User(Base):
-    """ User class """
+    """
+    Represents a user with attributes like email, password, and full name.
+    """
 
     def __init__(self, *args: List[Any], **kwargs: Dict[str, Any]):
-        """ Initialize a User instance """
+        """Initializes a User instance with optional attributes."""
         super().__init__(*args, **kwargs)
 
         self.email: Optional[str] = kwargs.get('email')
@@ -22,25 +24,25 @@ class User(Base):
 
     @property
     def password(self) -> Optional[str]:
-        """ Getter for the password """
+        """Returns the user's encrypted password."""
         return self._password
 
     @password.setter
     def password(self, pwd: Optional[str]):
-        """ Setter for a new password: encrypt in SHA256 """
+        """Encrypts and sets a new password."""
         if not isinstance(pwd, str) or not pwd:
             self._password = None
         else:
-            self._password = self._encrypt_password(pwd)
+            self._password = encrypt_password(pwd)
 
     def is_valid_password(self, pwd: str) -> bool:
-        """ Validate a password """
+        """Checks if the provided password matches the stored password."""
         if not isinstance(pwd, str) or not pwd or not self.password:
             return False
-        return self._encrypt_password(pwd) == self.password
+        return encrypt_password(pwd) == self.password
 
     def display_name(self) -> str:
-        """ Display the full name based on email, first name, and last name """
+        """Generates a display name based on the user's attributes."""
         if self.first_name and self.last_name:
             return f"{self.first_name} {self.last_name}"
         elif self.first_name:
@@ -48,8 +50,3 @@ class User(Base):
         elif self.last_name:
             return self.last_name
         return self.email or ""
-
-    @staticmethod
-    def _encrypt_password(pwd: str) -> str:
-        """ Encrypt the password using SHA256 """
-        return hashlib.sha256(pwd.encode()).hexdigest().lower()
