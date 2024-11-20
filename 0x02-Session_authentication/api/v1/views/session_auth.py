@@ -73,12 +73,12 @@ def session_login() -> str:
 
     # Retrieve the User instance based on the email
     users = User.search({"email": email})
-    if not users:
+    user: User = users.first()
+
+    if not user:
         return make_response(
             jsonify({"error": "no user found for this email"}), 404
         )
-
-    user: User = users.first()
 
     # Check the password
     if not user.is_valid_password(password):
