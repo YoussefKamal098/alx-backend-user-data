@@ -68,4 +68,3 @@ class SessionDBAuthFactory(AuthFactory):
         session authentication.
         """
         return SessionDBAuth()
-
