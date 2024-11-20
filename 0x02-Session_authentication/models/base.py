@@ -28,7 +28,7 @@ import os
 import io
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import List, Dict, Any, Optional, cast, Generator
 
 from models.types import BaseType
@@ -142,8 +142,8 @@ class Base:
                                                      update to the object.
         """
         self.id = kwargs.get('id', str(uuid.uuid4()))
-        self.created_at = kwargs.get('created_at', datetime.now(timezone.utc))
-        self.updated_at = kwargs.get('updated_at', datetime.now(timezone.utc))
+        self.created_at = kwargs.get('created_at', datetime.utcnow())
+        self.updated_at = kwargs.get('updated_at', datetime.utcnow())
 
         if isinstance(self.created_at, str):
             self.created_at = \
@@ -214,7 +214,7 @@ class Base:
 
     def save(self) -> None:
         """Save the current object to storage."""
-        self.updated_at = datetime.now(timezone.utc)
+        self.updated_at = datetime.utcnow()
         self.__class__._storage[self.id] = self
         self.__class__.save_to_file()
 
