@@ -100,7 +100,7 @@ class SessionDBAuth(SessionExpAuth):
             return None
 
         sessions = UserSession.search({'session_id': session_id})
-        if not sessions:
+        if not sessions.first():
             return None
 
         time_span = timedelta(seconds=self.session_duration)
@@ -137,7 +137,7 @@ class SessionDBAuth(SessionExpAuth):
             return False
 
         sessions = UserSession.search({'session_id': session_id})
-        if not sessions:
+        if not sessions.first():
             return False
 
         sessions.first().remove()
