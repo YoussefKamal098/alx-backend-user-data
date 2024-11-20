@@ -11,7 +11,8 @@ from abc import ABC, abstractmethod
 from api.v1.auth.auth_factory import (
     BasicAuthFactory,
     SessionAuthFactory,
-    SessionExpAuthFactory
+    SessionExpAuthFactory,
+    SessionDBAuthFactory
 )
 from api.v1.auth.auth_factory import AuthFactory
 
@@ -45,6 +46,7 @@ class DefaultAuthFactoryProvider(AuthFactoryProvider):
         'basic_auth': BasicAuthFactory,
         'session_auth': SessionAuthFactory,
         'session_exp_auth': SessionExpAuthFactory,
+        'session_db_auth': SessionDBAuthFactory,
     }
 
     def get_factory(self, auth_type: str) -> AuthFactory:

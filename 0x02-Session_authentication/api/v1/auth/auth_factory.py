@@ -13,12 +13,14 @@ Classes:
     - BasicAuthFactory: Factory for creating BasicAuth instance.
     - SessionAuthFactory: Factory for creating SessionAuth instance.
     - SessionExpAuthFactory: Factory for creating SessionExpAuth instance.
+    - SessionDBAuthFactory: Factory for creating SessionDBAuth instance.
 """
 from abc import ABC, abstractmethod
 from api.v1.auth.auth import AuthInterface
 from api.v1.auth.basic_auth import BasicAuth
 from api.v1.auth.session_auth import SessionAuth
 from api.v1.auth.session_exp_auth import SessionExpAuth
+from api.v1.auth.session_db_auth import SessionDBAuth
 
 
 class AuthFactory(ABC):
@@ -54,3 +56,16 @@ class SessionExpAuthFactory(AuthFactory):
         session authentication.
         """
         return SessionExpAuth()
+
+
+class SessionDBAuthFactory(AuthFactory):
+    """Factory for creating SessionDBAuth instance."""
+
+    def create_auth(self) -> AuthInterface:
+        """
+        Returns an instance of SessionDBAuth, which implements
+        session expiration logic in addition to standard
+        session authentication.
+        """
+        return SessionDBAuth()
+
