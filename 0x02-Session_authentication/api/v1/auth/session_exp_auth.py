@@ -17,6 +17,7 @@ It overrides the `create_session`, `user_id_for_session_id`,
 and other session management methods from `SessionAuth`.
 """
 from datetime import datetime
+from typing import Optional
 
 from api.v1.auth.session_auth import SessionAuth
 from config import config
@@ -41,7 +42,7 @@ class SessionExpAuth(SessionAuth):
         self.session_duration = config.SESSION_DURATION
         self.user_id_by_session_id = ExpiringDict(self.session_duration)
 
-    def create_session(self, user_id=None):
+    def create_session(self, user_id: str = None) -> Optional[str]:
         """
         Create a session ID with an expiration time.
 
@@ -61,7 +62,7 @@ class SessionExpAuth(SessionAuth):
 
         return session_id
 
-    def user_id_for_session_id(self, session_id=None):
+    def user_id_for_session_id(self, session_id: str = None) -> Optional[str]:
         """
         Retrieve user ID for the given session ID, considering expiration.
 

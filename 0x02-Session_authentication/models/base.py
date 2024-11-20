@@ -1,14 +1,35 @@
 #!/usr/bin/env python3
 """
-Base class for handling common operations like storage, serialization,
-and file-based persistence.
+Base module providing functionality for object storage, serialization,
+timestamp management, and persistence through file-based storage.
+
+This module contains two main classes:
+
+1. BaseType: Represents the base class for all objects stored in memory.
+2. Query: A helper class to filter and query stored objects.
+
+The module supports storing objects in memory (in the `_storage` dictionary)
+and serializing them to and from JSON files for persistence. It also supports
+operations like searching for objects based on attributes, as well as creating
+and managing unique IDs for objects.
+
+Classes:
+    - Query: A query builder class for filtering, retrieving, and manipulating
+      objects in storage.
+    - Base: The base class for all stored objects, providing ID generation,
+      timestamp handling, storage management, and persistence functionality.
+
+Constants:
+    - TIMESTAMP_FORMAT: The format used for datetime string serialization.
+    - DEFAULT_FILE_PREFIX: Default prefix for the file name used for
+      persistent storage.
 """
 import os
 import io
 import json
 import uuid
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional, cast
+from typing import List, Dict, Any, Optional, cast, Generator
 
 from models.types import BaseType
 
@@ -17,27 +38,119 @@ TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S"
 DEFAULT_FILE_PREFIX = ".db_"
 
 
+class Query:
+    """
+    A helper class to filter and query stored objects lazily.
+
+    This class allows chaining methods like `first()`, `last()`, and `all()`
+    to retrieve specific objects from storage based on the provided search
+    criteria. Results are filtered lazily to improve performance.
+
+    Attributes:
+        model (type): The model class of the objects being queried.
+        attributes (dict): The attributes to filter objects by.
+        _results (list or None): Cached list of filtered results to avoid
+                                 redundant filtering.
+    """
+
+    def __init__(
+            self, model: type(BaseType), attributes: Optional[Dict[str, Any]]
+    ):
+        """
+        Initialize the Query object with the model class and optional filter
+        attributes.
+
+        Args:
+            model (type): The model class for which to query objects.
+            attributes (Optional[Dict[str, Any]]): The attributes to filter
+                                                   the objects by.
+        """
+        self.model = model
+        self.attributes = attributes
+        self._results = None  # To store results once they are computed
+
+    def _filter_results(self) -> Generator[BaseType, None, None]:
+        """
+        Helper function to filter objects lazily based on
+        the provided attributes.
+        """
+        if not self.attributes:
+            # If no attributes, return all objects lazily
+            yield from self.model.get_all_objects()
+        else:
+            # Otherwise, filter objects lazily based on attributes
+            for obj in self.model.get_all_objects():
+                if all(getattr(obj, k, None) == v
+                       for k, v in self.attributes.items()):
+                    yield obj
+
+    def _get_results(self) -> List[BaseType]:
+        """Filter the results and cache them for reuse."""
+        if self._results is None:
+            # Cache results after filtering
+            self._results = list(self._filter_results())
+        return self._results
+
+    def first(self) -> BaseType:
+        """Return the first object that matches the search criteria."""
+        results = self._get_results()
+        return results[0] if results else None
+
+    def last(self) -> BaseType:
+        """Return the last object that matches the search criteria."""
+        results = self._get_results()
+        return results[-1] if results else None
+
+    def all(self) -> List[BaseType]:
+        """Return all objects that match the search criteria."""
+        return self._get_results()
+
+
 class Base:
     """
-    Base class for managing common operations like ID generation,
-    timestamp handling, storage, and persistence.
+    Base class for managing common operations like ID generation, timestamp
+    handling, storage, and persistence.
+
+    This class serves as the parent for all objects that need to be stored
+    and retrieved from persistent storage (like a JSON file). It provides
+    functionality for generating unique IDs, handling object timestamps,
+    storing objects in memory, and saving them to or loading them from a file.
+
+    Attributes:
+        _storage (dict): A dictionary holding all objects of the class
+            in memory.
+        _file_prefix (str): The prefix used for the file name where objects are
+                             stored.
+        id (str): The unique identifier of the object.
+        created_at (datetime): The timestamp of when the object was created.
+        updated_at (datetime): The timestamp of the last update to the object.
     """
 
     _storage: Dict[str, 'Base'] = {}
     _file_prefix: str = DEFAULT_FILE_PREFIX
 
     def __init__(self, *args: List[Any], **kwargs: Dict[str, Any]):
-        """Initialize a Base instance with optional attributes."""
+        """
+        Initialize a Base instance with optional attributes.
+
+        Args:
+            id (str, optional): The unique identifier for the object. If not
+                                 provided, a new UUID will be generated.
+            created_at (datetime or str, optional): The timestamp of when the
+                                                     object was created.
+            updated_at (datetime or str, optional): The timestamp of the last
+                                                     update to the object.
+        """
         self.id = kwargs.get('id', str(uuid.uuid4()))
         self.created_at = kwargs.get('created_at', datetime.now(timezone.utc))
         self.updated_at = kwargs.get('updated_at', datetime.now(timezone.utc))
 
         if isinstance(self.created_at, str):
-            self.created_at = datetime.strptime(
-                self.created_at, TIMESTAMP_FORMAT)
+            self.created_at = \
+                datetime.strptime(self.created_at, TIMESTAMP_FORMAT)
         if isinstance(self.updated_at, str):
-            self.updated_at = datetime.strptime(
-                self.updated_at, TIMESTAMP_FORMAT)
+            self.updated_at = \
+                datetime.strptime(self.updated_at, TIMESTAMP_FORMAT)
 
         # Ensure class-level storage exists
         self.__class__.init_storage()
@@ -127,12 +240,13 @@ class Base:
         return cls._storage.get(obj_id)
 
     @classmethod
-    def search(cls, attributes: Optional[Dict[str, Any]]) -> List[BaseType]:
-        """Search for objects by attributes."""
-        if not attributes:
-            return list(cls._storage.values())
+    def get_all_objects(cls) -> Generator['BaseType', None, None]:
+        """Generator to yield all objects stored in the class."""
+        for obj in cls._storage.values():
+            yield obj
 
-        return [
-            obj for obj in cls._storage.values()
-            if all(getattr(obj, k, None) == v for k, v in attributes.items())
-        ]
+    @classmethod
+    def search(cls, attributes: Optional[Dict[str, Any]] = None) -> 'Query':
+        """Returns a Query object to chain additional
+        methods like first(), last(), and all()"""
+        return Query(cls, attributes)

@@ -139,7 +139,7 @@ class BasicAuth(Auth):
         if not users:
             return None
 
-        user = users[0]  # Assuming we get only one user
+        user = users.first()  # Assuming we get only one user
         if not user.is_valid_password(user_pwd):
             return None
 

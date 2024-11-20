@@ -78,7 +78,7 @@ def session_login() -> str:
             jsonify({"error": "no user found for this email"}), 404
         )
 
-    user: User = users[0]
+    user: User = users.first()
 
     # Check the password
     if not user.is_valid_password(password):
