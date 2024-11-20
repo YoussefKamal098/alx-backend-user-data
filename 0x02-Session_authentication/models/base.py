@@ -105,6 +105,10 @@ class Query:
         """Return all objects that match the search criteria."""
         return self._get_results()
 
+    def __len__(self) -> int:
+        """Return the number of objects that match the search criteria."""
+        return len(self._get_results())
+
 
 class Base:
     """
