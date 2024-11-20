@@ -66,6 +66,9 @@ class SessionDBAuth(SessionExpAuth):
             Optional[str]: The generated session ID, or None if
                 session creation fails.
         """
+        if user_id is None or not isinstance(user_id, str):
+            return None
+
         session_id = str(uuid.uuid4())
 
         user_session = UserSession(**{
@@ -93,6 +96,9 @@ class SessionDBAuth(SessionExpAuth):
             Optional[str]: The user ID associated with the session, or None if
                            the session is invalid or expired.
         """
+        if not session_id or not isinstance(session_id, str):
+            return None
+
         sessions = UserSession.search({'session_id': session_id})
         if not sessions:
             return None
@@ -122,7 +128,14 @@ class SessionDBAuth(SessionExpAuth):
             bool: True if the session was successfully destroyed, False if no
                   session was found or destruction failed.
         """
+
+        if request is None:
+            return False
+
         session_id = self.session_cookie(request)
+        if not session_id:
+            return False
+
         sessions = UserSession.search({'session_id': session_id})
         if not sessions:
             return False
