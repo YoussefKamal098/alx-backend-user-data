@@ -1,6 +1,6 @@
-# Simple API with Session Authentication
+# Simple API with Session Authentication and Session Persistence
 
-A simple HTTP API to interact with the `User` model, now enhanced with **Session Authentication** alongside the previously implemented **Basic Authentication**.
+A simple HTTP API to interact with the `User` model, now enhanced with **Session Authentication** and **Session Persistence** using a database. This ensures sessions persist even after server restarts, providing a more robust and scalable authentication mechanism.
 
 ---
 
@@ -47,10 +47,11 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 
 - **`base.py`**: Base model for API objects, handles serialization to file.
 - **`user.py`**: `User` model implementation.
+- **`user_session.py`**: Implements the `UserSession` model for managing session persistence using a database.
 
 ### `api/v1/`
 
-- **`app.py`**: Entry point for the API.
+- **`app.py`**: Entry point for the API, dynamically initializes the appropriate authentication system based on the `AUTH_TYPE` environment variable.
 - **`views/`**
     - **`index.py`**: Provides basic API endpoints such as `/status` and `/stats`.
     - **`users.py`**: Contains all endpoints related to user management.
@@ -60,6 +61,7 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
     - **`basic_auth.py`**: Implements Basic Authentication.
     - **`session_auth.py`**: Implements session-based authentication, including creation and validation of sessions.
     - **`session_exp_auth.py`**: Extends `SessionAuth` by adding session expiration logic.
+    - **`session_db_auth.py`**: Implements session authentication with session persistence using the `UserSession` model.
     - **`auth_factory.py`**: Abstract factory module for creating different authentication instances (`BasicAuth`, `SessionAuth`, and `SessionExpAuth`).
     - **`auth_factory_provider.py`**: Manages authentication factories dynamically, allowing for the addition and removal of custom authentication mechanisms.
 
@@ -67,6 +69,7 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 
 - **`utils.py`**: **Utility module** that includes helper functions and decorators such as `@override` to enforce subclass method overriding.
 
+---
 
 ## Features Implemented
 
@@ -83,6 +86,14 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 - Authenticate users via Session IDs stored in cookies.
 - Includes support for session expiration.
 
+### 3. **Session Persistence (New Feature)**
+- **What is it?**: Sessions are now stored in a database using the `UserSession` model. This ensures that sessions persist even after server restarts.
+- **Implemented in**: `SessionDBAuth` class.
+- **Advantages**:
+    - Sessions are no longer lost when the server restarts.
+    - Allows for scaling and better session management.
+- **Environment Variable**: `AUTH_TYPE=session_db_auth`.
+
 ---
 
 ## Setup
@@ -97,7 +108,7 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 
     - `API_HOST`: Defines the host (e.g., `0.0.0.0`).
     - `API_PORT`: Defines the port (e.g., `5000`).
-    - `AUTH_TYPE`: Selects the authentication method (`basic_auth`, `session_auth`, or `session_exp_auth`).
+    - `AUTH_TYPE`: Selects the authentication method (`basic_auth`, `session_auth`, `session_exp_auth`, or `session_db_auth`).
     - `SESSION_NAME`: Cookie name for storing the session ID (default: `_my_session_id`).
     - `SESSION_DURATION`: Duration (in seconds) for session validity (default: no expiration).
 
@@ -108,7 +119,7 @@ A simple HTTP API to interact with the `User` model, now enhanced with **Session
 Start the API with:
 
 ```bash
-$ API_HOST=0.0.0.0 API_PORT=5000 AUTH_TYPE=session_auth python3 -m api.v1.app
+$ API_HOST=0.0.0.0 API_PORT=5000 AUTH_TYPE=session_db_auth SESSION_NAME=_my_session_id SESSION_DURATION=60 python3 -m api.v1.app
 ```
 
 ---
@@ -139,35 +150,9 @@ $ API_HOST=0.0.0.0 API_PORT=5000 AUTH_TYPE=session_auth python3 -m api.v1.app
 - `POST /api/v1/auth_session/login`: Authenticates a user via email and password, creating a session.
 - `DELETE /api/v1/auth_session/logout`: Logs out the user by destroying their session.
 
-### Special User Route
-
-- `GET /api/v1/users/me`: Retrieves the authenticated user object (using the session ID).
-
----
-
-## Authentication
-
-### Session Authentication Workflow
-
-1. A session ID is generated for the user upon successful login and stored in the server.
-2. The session ID is returned to the client as a cookie (`_my_session_id`).
-3. Subsequent requests validate the session ID for authorization.
-
-### Session Expiration
-
-- When using `SessionExpAuth`, the session is valid only for a limited time:
-    - Expiration is determined by `SESSION_DURATION`.
-    - Expired sessions return `401 Unauthorized`.
-
 ---
 
 ## Example Usage
-
-### Start the Server
-
-```bash
-$ API_HOST=0.0.0.0 API_PORT=5000 AUTH_TYPE=session_auth python3 -m api.v1.app
-```
 
 ### Authenticate a User
 
@@ -193,15 +178,13 @@ $ curl -X DELETE --cookie "_my_session_id=<SESSION_ID>" http://0.0.0.0:5000/api/
 
 ## Notes
 
-1. **Session vs. Basic Authentication**:
-    - `basic_auth`: Authenticates every request with username and password.
-    - `session_auth`: Uses cookies for persistent sessions, better for web applications.
+1. **Session Persistence**:
+    - Sessions stored in the `UserSession` database are persisted across server restarts.
+    - Configurable via `AUTH_TYPE=session_db_auth`.
 
 2. **Session Expiration**:
-    - Supported in `session_exp_auth`.
-    - Ensures users are logged out after a certain duration of inactivity.
+    - Supported in `SessionExpAuth` and `SessionDBAuth`.
+    - Expired sessions are automatically invalidated based on `SESSION_DURATION`.
 
 3. **Default Configuration**:
     - If `AUTH_TYPE` is not set, defaults to `basic_auth`.
-
----
