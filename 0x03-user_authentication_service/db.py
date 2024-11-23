@@ -148,9 +148,9 @@ class DB:
             session.query(User).filter_by(id=user_id).\
                 update(kwargs, synchronize_session=False)
             session.commit()
-        except InvalidRequestError:
+        except InvalidRequestError as err:
             session.rollback()
-            raise ValueError()
+            raise ValueError(err)
         finally:
             self._session.close()
 
@@ -159,4 +159,4 @@ class DB:
         Dispose the engine and clean up session management.
         """
         self._session.remove()
-        self._engine.dispose()  # Dispose the engine
+        self._engine.dispose()
