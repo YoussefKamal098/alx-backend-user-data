@@ -64,7 +64,7 @@ class DB:
         """
         return self._Session()
 
-    def add_user(self, email: str, hashed_password: str) -> Optional[User]:
+    def add_user(self, email: str, hashed_password: str) -> User:
         """
         Adds a new user to the database and commits the transaction.
 
