@@ -64,13 +64,13 @@ class DB:
         # Using scoped_session to ensure thread-local session management
         return scoped_session(self.__session_factory)
 
-    def add_user(self, email: str, hashed_password: str) -> User:
+    def add_user(self, email: str, hashed_password: bytes) -> User:
         """
         Adds a new user to the database and commits the transaction.
 
         Args:
             email (str): The user's email address.
-            hashed_password (str): The user's hashed password.
+            hashed_password (bytes): The user's hashed password.
 
         Returns:
             Optional[User]: The created User object,
