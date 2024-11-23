@@ -81,5 +81,3 @@ class Auth:
             )
 
         raise ValueError(f"User {email} already exists")
-
-
