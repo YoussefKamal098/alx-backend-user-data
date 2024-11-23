@@ -117,7 +117,7 @@ class DB:
 
         return user
 
-    def update_user(self, user_id: str, **kwargs) -> None:
+    def update_user(self, user_id: int, **kwargs) -> None:
         """
         Updates an existing user in the database based on the provided user_id
         and the given keyword arguments. The method finds the user by
@@ -127,7 +127,7 @@ class DB:
         database, and any errors during the update result in a rollback.
 
         Args:
-            user_id (str): The ID of the user to update.
+            user_id (int): The ID of the user to update.
             **kwargs: Arbitrary keyword arguments
                 representing the attributes to update.
 
