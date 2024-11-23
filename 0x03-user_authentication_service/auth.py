@@ -9,20 +9,20 @@ their hashes will be different.
 """
 import bcrypt
 
-def _hash_password(password: str) -> str:
+def _hash_password(password: str) -> bytes:
     """
-   Hashes the given password using bcrypt and returns the
-   hash in hexadecimal format.
+    Hashes the given password using bcrypt and returns the
+    hash as a binary string.
 
-   This method takes a plain text password, generates a random salt,
-   and applies the bcrypt algorithm to hash the password.
-   The result is returned as a hexadecimal string.
+    This method takes a plain text password, generates a random salt,
+    and applies the bcrypt algorithm to hash the password. The result
+    is returned in binary format.
 
-   Args:
-       password (str): The plain text password to be hashed.
+    Args:
+        password (str): The plain text password to be hashed.
 
-   Returns:
-       str: The hashed password in hexadecimal format,
-            including the salt and the bcrypt hash.
-   """
-    return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).hex()
+    Returns:
+        bytes: The hashed password in binary format,
+               including the salt and the bcrypt hash.
+    """
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
