@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
 """
-Password hashing module using bcrypt.
+Password hashing and user authentication module.
 
 This module provides functionality for securely hashing passwords using
-the bcrypt algorithm. It includes a method for hashing a password with
-a salt, which ensures that even if two users have the same password,
-their hashes will be different.
+the bcrypt algorithm and managing user authentication and registration.
+It ensures secure handling of passwords by hashing them with a salt, making
+it difficult to reverse-engineer the original password.
 
 Additionally, the `Auth` class is implemented to handle user registration
-by checking if a user exists in the database and securely hashing their
-password before storing it.
+and authentication, including checking if a user exists, securely hashing
+their password before storing it, and validating user credentials.
 
 Functions:
     _hash_password(password: str) -> bytes:
         Hashes the given password using bcrypt and returns the hash as a
         binary string.
 
+    _generate_uuid() -> str:
+        Generates a new UUID and returns it as a string. This function
+        is private and intended for internal use to create unique
+        identifiers such as session tokens.
+
 Classes:
     Auth:
         A class responsible for user registration and authentication.
-        It checks if a user exists and stores the hashed password.
-
+        It interacts with the database to register users, validate
+        credentials, and manage user data securely.
 """
-import bcrypt
+
+import uuid
 
 from sqlalchemy.orm.exc import NoResultFound
+import bcrypt
+
 from user import User
 from db import DB
 
@@ -46,6 +54,18 @@ def _hash_password(password: str) -> bytes:
                including the salt and the bcrypt hash.
     """
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+
+def _generate_uuid() -> str:
+    """
+    Generates a new UUID and returns it as a string.
+
+    This is a private method meant for internal use in the auth module.
+
+    Returns:
+        str: The string representation of a new UUID.
+    """
+    return str(uuid.uuid4())
 
 
 class Auth:
