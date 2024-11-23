@@ -2,7 +2,7 @@
 """
 Simple Flask app with a single GET route returning a JSON message.
 """
-from flask import Flask, jsonify, request, abort, make_response
+from flask import Flask, jsonify, request, abort, make_response, redirect
 
 from auth import Auth
 
@@ -69,6 +69,30 @@ def login():
     response = make_response(jsonify({"email": email, "message": "logged in"}))
     response.set_cookie("session_id", session_id)
     return response
+
+
+@app.route("/sessions", methods=["DELETE"])
+def logout():
+    """
+    Handles user logout by destroying the session based on
+    the session_id cookie. Redirects to the homepage if successful,
+    returns a 403 if the session is invalid.
+    """
+    session_id = request.cookies.get("session_id")
+
+    # If no session_id provided or session is invalid
+    if not session_id:
+        abort(403)  # Forbidden if no session_id
+
+    # Find user by session_id and destroy session if valid
+    user = AUTH.get_user_from_session_id(session_id)
+
+    if user:
+        AUTH.destroy_session(user.id)  # Destroy the session
+        return redirect("/")  # Redirect to the homepage after logout
+
+    # If no valid user found, respond with 403 Forbidden
+    abort(403)
 
 
 # Run the app on host 0.0.0.0 and port 5000
