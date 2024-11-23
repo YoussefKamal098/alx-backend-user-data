@@ -29,6 +29,7 @@ Classes:
 """
 
 import uuid
+from typing import Optional
 
 from sqlalchemy.orm.exc import NoResultFound
 import bcrypt
@@ -122,3 +123,22 @@ class Auth:
             return False
 
         return False
+
+    def create_session(self, email: str) -> Optional[str]:
+        """
+        Creates a new session for the user identified by the given email.
+
+        Args:
+            email (str): The email of the user.
+
+        Returns:
+            str: The newly generated session ID if the user exists,
+                 or None if the user does not exist.
+        """
+        try:
+            user = self._db.find_user_by(email=email)
+            session_id = _generate_uuid()
+            self._db.update_user(user.id, session_id=session_id)
+            return session_id
+        except NoResultFound:
+            return None
