@@ -71,7 +71,7 @@ def login():
     return response
 
 
-@app.route("/sessions", methods=["DELETE"])
+@app.route("/sessions", methods=["DELETE"], strict_slashes=False)
 def logout():
     """
     Handles user logout by destroying the session based on
@@ -79,17 +79,32 @@ def logout():
     returns a 403 if the session is invalid.
     """
     session_id = request.cookies.get("session_id")
-
-    # If no session_id provided or session is invalid
     if not session_id:
         abort(403)  # Forbidden if no session_id
 
-    # Find user by session_id and destroy session if valid
     user = AUTH.get_user_from_session_id(session_id)
-
     if user:
-        AUTH.destroy_session(user.id)  # Destroy the session
+        AUTH.destroy_session(user.id)
         return redirect("/")  # Redirect to the homepage after logout
+
+    # If no valid user found, respond with 403 Forbidden
+    abort(403)
+
+
+@app.route("/profile", methods=["GET"])
+def profile():
+    """
+    Handles the profile route by returning the user's email based on
+    the session_id cookie. Responds with 403 if the session is invalid
+    or the user does not exist.
+    """
+    session_id = request.cookies.get("session_id")
+    if not session_id:
+        abort(403)  # Forbidden if no session_id
+
+    user = AUTH.get_user_from_session_id(session_id)
+    if user:
+        return jsonify({"email": user.email})
 
     # If no valid user found, respond with 403 Forbidden
     abort(403)
