@@ -98,7 +98,7 @@ class Auth:
             self._db.find_user_by(email=email)
         except NoResultFound:
             return self._db.add_user(
-                email=email, hashed_password=_hash_password(password)
+                email=email, hashed_password=str(_hash_password(password))
             )
 
         raise ValueError(f"User {email} already exists")
@@ -124,7 +124,7 @@ class Auth:
 
         return False
 
-    def create_session(self, email: str) -> Optional[str]:
+    def create_session(self, email: str) -> str:
         """
         Creates a new session for the user identified by the given email.
 
@@ -132,7 +132,7 @@ class Auth:
             email (str): The email of the user.
 
         Returns:
-            str: The newly generated session ID if the user exists,
+            Optional[str]: The newly generated session ID if the user exists,
                  or None if the user does not exist.
         """
         try:
