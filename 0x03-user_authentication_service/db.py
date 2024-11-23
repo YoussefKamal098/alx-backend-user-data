@@ -86,7 +86,7 @@ class DB:
             session.rollback()
             user = None
         finally:
-            self._session.remove()
+            self._session.close()
 
         return user
 
