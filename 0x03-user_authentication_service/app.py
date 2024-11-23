@@ -3,6 +3,7 @@
 Simple Flask app with a single GET route returning a JSON message.
 """
 from flask import Flask, jsonify, request, abort, make_response, redirect
+from werkzeug.exceptions import BadRequest
 
 from auth import Auth
 
@@ -91,7 +92,7 @@ def logout():
     abort(403)
 
 
-@app.route("/profile", methods=["GET"])
+@app.route("/profile", methods=["GET"], strict_slashes=False)
 def profile():
     """
     Handles the profile route by returning the user's email based on
@@ -110,7 +111,7 @@ def profile():
     abort(403)
 
 
-@app.route('/reset_password', methods=['POST'])
+@app.route('/reset_password', methods=['POST'], strict_slashes=False)
 def reset_password():
     """
     Handles the POST request to reset the password.
@@ -129,6 +130,39 @@ def reset_password():
     except ValueError:
         # If the user is not found, respond with a 403 Forbidden error
         abort(403, description="Email not registered")
+
+
+@app.route('/reset_password', methods=['PUT'], strict_slashes=False)
+def update_password():
+    """
+    Updates the password for the user corresponding to
+    the provided email and reset_token.
+    """
+    try:
+        email = request.form.get('email')
+        reset_token = request.form.get('reset_token')
+        new_password = request.form.get('new_password')
+
+        if not email:
+            raise BadRequest("Email is required.")
+        if not reset_token:
+            raise BadRequest("Reset token is required.")
+        if not new_password:
+            raise BadRequest("New password is required.")
+
+        AUTH.update_password(reset_token, new_password)
+
+        return jsonify({"email": email, "message": "Password updated"}), 200
+    except ValueError:
+        # In case of an invalid reset token
+        abort(403)
+    except BadRequest as e:
+        # Handle bad request errors (missing fields, etc.)
+        error_message = {
+            "error": "Bad Request",
+            "message": str(e)
+        }
+        return jsonify(error_message), 400
 
 
 # Run the app on host 0.0.0.0 and port 5000
