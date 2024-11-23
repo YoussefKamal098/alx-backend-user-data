@@ -2,7 +2,7 @@
 """
 Simple Flask app with a single GET route returning a JSON message.
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort, make_response
 
 from auth import Auth
 
@@ -38,6 +38,37 @@ def users():
         return jsonify({"email": user.email, "message": "user created"}), 200
     except ValueError:
         return jsonify({"message": "email already registered"}), 400
+
+
+@app.route("/sessions", methods=["POST"])
+def login():
+    """
+    Handles user login by validating email and password.
+    If valid, creates a session ID, sets it as a cookie,
+    and returns a success response.
+
+    Returns:
+        JSON response with email and message if successful.
+        Aborts with 401 status code if login credentials are invalid.
+    """
+    email = request.form.get("email")
+    password = request.form.get("password")
+
+    if not email or not password:
+        abort(401)
+
+    # Validate login credentials
+    if not AUTH.valid_login(email, password):
+        abort(401)
+
+    # Create session and set session_id cookie
+    session_id = AUTH.create_session(email)
+    if not session_id:
+        abort(401)
+
+    response = make_response(jsonify({"email": email, "message": "logged in"}))
+    response.set_cookie("session_id", session_id)
+    return response
 
 
 # Run the app on host 0.0.0.0 and port 5000
