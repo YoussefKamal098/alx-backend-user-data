@@ -9,6 +9,7 @@ their hashes will be different.
 """
 import bcrypt
 
+
 def _hash_password(password: str) -> bytes:
     """
     Hashes the given password using bcrypt and returns the
