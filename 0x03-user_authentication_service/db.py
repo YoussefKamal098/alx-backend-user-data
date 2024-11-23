@@ -6,8 +6,9 @@ from threading import Lock
 from typing import Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker, Session, scoped_session
+from sqlalchemy.exc import SQLAlchemyError, InvalidRequestError
+from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm.exc import NoResultFound
 
 from user import User, Base
 
@@ -38,16 +39,14 @@ class DB:
         Initialize the database connection, create the engine with pooling,
         and set up the session factory.
         """
-
         # Create the engine
         self._engine = create_engine(uri)
 
         # Create tables if not exists
         self._initialize_db()
 
-        # Create scoped session for thread safety
+        # Create a sessionmaker factory
         self.__session_factory = sessionmaker(bind=self._engine)
-        self._Session = scoped_session(self.__session_factory)
 
     def _initialize_db(self) -> None:
         """
@@ -57,12 +56,13 @@ class DB:
         Base.metadata.create_all(self._engine)
 
     @property
-    def _session(self) -> Session:
+    def _session(self) -> scoped_session:
         """
         Returns a session object. It ensures each thread gets
         a separate session.
         """
-        return self._Session()
+        # Using scoped_session to ensure thread-local session management
+        return scoped_session(self.__session_factory)
 
     def add_user(self, email: str, hashed_password: str) -> User:
         """
@@ -76,7 +76,7 @@ class DB:
             Optional[User]: The created User object,
                 or None if an error occurred.
         """
-        session = self._Session()
+        session = self._session()  # Get a session instance per thread
 
         try:
             user = User(email=email, hashed_password=hashed_password)
@@ -86,7 +86,34 @@ class DB:
             session.rollback()
             user = None
         finally:
-            session.close()
+            self._session.remove()
+
+        return user
+
+    def find_user_by(self, **kwargs) -> User:
+        """
+        Find a user in the database based on keyword arguments.
+
+        Args:
+            **kwargs: Arbitrary keyword arguments for filtering.
+
+        Returns:
+            User: The first matching user object.
+
+        Raises:
+            NoResultFound: If no matching user is found.
+            InvalidRequestError: If the query arguments are invalid.
+        """
+        session = self._session()  # Get a session instance per thread
+
+        try:
+            user = session.query(User).filter_by(**kwargs).one()
+        except NoResultFound:
+            raise NoResultFound("No user found matching the criteria.")
+        except InvalidRequestError:
+            raise InvalidRequestError("Invalid query arguments provided.")
+        finally:
+            self._session.remove()
 
         return user
 
@@ -94,5 +121,5 @@ class DB:
         """
         Dispose the engine and clean up session management.
         """
-        self._engine.dispose()
-        self._Session.remove()
+        self._session.remove()
+        self._engine.dispose()  # Dispose the engine
