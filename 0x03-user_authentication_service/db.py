@@ -75,6 +75,10 @@ class DB:
         Returns:
             Optional[User]: The created User object,
                 or None if an error occurred.
+
+         Raises:
+           SQLAlchemyError: If an error occurs while interacting
+            with the database.
         """
         session = self._session()  # Get a session instance per thread
 
@@ -82,13 +86,38 @@ class DB:
             user = User(email=email, hashed_password=hashed_password)
             session.add(user)
             session.commit()
-        except SQLAlchemyError:
+        except SQLAlchemyError as err:
             session.rollback()
-            user = None
+            raise SQLAlchemyError(err)
         finally:
             self._session.close()
 
         return user
+
+    def delete_user(self, email: str) -> None:
+        """
+        Deletes the user with the given email.
+
+        Args:
+            email (str): The user's email address.
+        Raises:
+           ValueError: If no matching user is found.
+           SQLAlchemyError: If an error occurs while interacting
+            with the database.
+        """
+        session = self._session()
+
+        try:
+            user = session.query(User).filter_by(email=email).one()
+            session.delete(user)
+            session.commit()
+        except NoResultFound:
+            raise ValueError("User not found")
+        except SQLAlchemyError as err:
+            session.rollback()
+            raise SQLAlchemyError(err)
+        finally:
+            self._session.close()
 
     def find_user_by(self, **kwargs) -> User:
         """

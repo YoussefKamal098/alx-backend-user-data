@@ -103,6 +103,19 @@ class Auth:
 
         raise ValueError(f"User {email} already exists")
 
+    def unregister_user(self, email: str) -> None:
+        """
+       Unregisters a user by deleting their record from the database.
+
+       Args:
+           email (str): The email address of the user to be unregistered.
+
+       Raises:
+           ValueError: If the user with the provided email is not found in
+            the database.
+       """
+        return self._db.delete_user(email)
+
     def valid_login(self, email: str, password: str) -> bool:
         """
         Validates login credentials by checking email and password.

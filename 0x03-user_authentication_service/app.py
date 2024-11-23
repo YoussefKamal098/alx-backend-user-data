@@ -165,6 +165,18 @@ def update_password():
         return jsonify(error_message), 400
 
 
+@app.route('/users/<email>', methods=['DELETE'], strict_slashes=False)
+def delete_user(email: str):
+    """Endpoint to delete a user by email."""
+    try:
+        # Call the Auth class method to delete the user
+        AUTH.unregister_user(email)
+        return jsonify({"message": "user deleted"}), 200
+    except ValueError:
+        # If the user does not exist, raise a 404 error
+        return jsonify({"message": "User not found"}), 404
+
+
 # Run the app on host 0.0.0.0 and port 5000
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

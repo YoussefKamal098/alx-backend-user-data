@@ -12,7 +12,8 @@ BASE_URL = "http://0.0.0.0:5000"
 
 
 def register_user(email: str, password: str) -> None:
-    """Tests registering a user.
+    """
+    Tests registering a user.
     """
     url = "{}/users".format(BASE_URL)
     body = {
@@ -28,7 +29,8 @@ def register_user(email: str, password: str) -> None:
 
 
 def log_in_wrong_password(email: str, password: str) -> None:
-    """Tests logging in with a wrong password.
+    """
+    Tests logging in with a wrong password.
     """
     url = "{}/sessions".format(BASE_URL)
     body = {
@@ -40,7 +42,8 @@ def log_in_wrong_password(email: str, password: str) -> None:
 
 
 def log_in(email: str, password: str) -> str:
-    """Tests logging in.
+    """
+    Tests logging in.
     """
     url = "{}/sessions".format(BASE_URL)
     body = {
@@ -54,7 +57,8 @@ def log_in(email: str, password: str) -> str:
 
 
 def profile_unlogged() -> None:
-    """Tests retrieving profile information whilst logged out.
+    """
+    Tests retrieving profile information whilst logged out.
     """
     url = "{}/profile".format(BASE_URL)
     res = requests.get(url)
@@ -62,7 +66,8 @@ def profile_unlogged() -> None:
 
 
 def profile_logged(session_id: str) -> None:
-    """Tests retrieving profile information whilst logged in.
+    """
+    Tests retrieving profile information whilst logged in.
     """
     url = "{}/profile".format(BASE_URL)
     req_cookies = {
@@ -74,7 +79,8 @@ def profile_logged(session_id: str) -> None:
 
 
 def log_out(session_id: str) -> None:
-    """Tests logging out of a session.
+    """
+    Tests logging out of a session.
     """
     url = "{}/sessions".format(BASE_URL)
     req_cookies = {
@@ -86,7 +92,8 @@ def log_out(session_id: str) -> None:
 
 
 def reset_password_token(email: str) -> str:
-    """Tests requesting a password reset.
+    """
+    Tests requesting a password reset.
     """
     url = "{}/reset_password".format(BASE_URL)
     body = {'email': email}
@@ -99,7 +106,8 @@ def reset_password_token(email: str) -> str:
 
 
 def update_password(email: str, reset_token: str, new_password: str) -> None:
-    """Tests updating a user's password.
+    """
+    Tests updating a user's password.
     """
     url = "{}/reset_password".format(BASE_URL)
     body = {
@@ -112,13 +120,36 @@ def update_password(email: str, reset_token: str, new_password: str) -> None:
     assert res.json() == {"email": email, "message": "Password updated"}
 
 
+def delete_user(email: str) -> None:
+    """Deletes the test user to clean up the data."""
+    url = "{}/users/{}".format(BASE_URL, email)
+    res = requests.delete(url)
+    assert res.status_code == 200
+    assert res.json() == {"message": "user deleted"}
+
+
+def cleanup(session_id: str, email: str) -> None:
+    """Cleanup function to delete the user and log out."""
+    # Log out the user if logged in
+    log_out(session_id)
+    # Delete the user
+    delete_user(email)
+
+
 if __name__ == "__main__":
+    # Test user registration and login
     register_user(EMAIL, PASSWD)
     log_in_wrong_password(EMAIL, NEW_PASSWD)
     profile_unlogged()
+
+    # Log in, perform profile check, and log out
     session_id = log_in(EMAIL, PASSWD)
     profile_logged(session_id)
-    log_out(session_id)
+
+    # Reset password and update it
     reset_token = reset_password_token(EMAIL)
     update_password(EMAIL, reset_token, NEW_PASSWD)
-    log_in(EMAIL, NEW_PASSWD)
+    session_id = log_in(EMAIL, NEW_PASSWD)
+
+    # Cleanup: log out and delete the user
+    cleanup(session_id, EMAIL)
