@@ -113,9 +113,46 @@ class DB:
         except InvalidRequestError:
             raise InvalidRequestError("Invalid query arguments provided.")
         finally:
-            self._session.remove()
+            self._session.close()
 
         return user
+
+    def update_user(self, user_id: str, **kwargs) -> None:
+        """
+        Updates an existing user in the database based on the provided user_id
+        and the given keyword arguments. The method finds the user by
+        the provided user_id, and updates the user's attributes with the
+        values provided in **kwargs. If an invalid attribute is provided in
+        **kwargs, a ValueError is raised. The changes are committed to the
+        database, and any errors during the update result in a rollback.
+
+        Args:
+            user_id (str): The ID of the user to update.
+            **kwargs: Arbitrary keyword arguments
+                representing the attributes to update.
+
+        Raises:
+            ValueError: If an invalid attribute is provided in **kwargs.
+            InvalidRequestError: If there is an issue with the update request.
+
+        Returns:
+            None: The method does not return any value.
+        """
+        session = self._session()
+
+        user = self.find_user_by(id=user_id)
+        if not user:
+            return
+
+        try:
+            session.query(User).filter_by(id=user_id).\
+                update(kwargs, synchronize_session=False)
+            session.commit()
+        except InvalidRequestError:
+            session.rollback()
+            raise ValueError()
+        finally:
+            self._session.close()
 
     def close(self) -> None:
         """
